@@ -140,5 +140,25 @@ All motion is transform/opacity only and respects `prefers-reduced-motion`. Buil
 - **Crash fix** — New Agreement went blank because `icon="customer"` had no entry in the shared `ICONS` set, so `Svg` ran `undefined.split('M')`. Added the `customer` icon and hardened `Svg` with `(d || '')` so a missing/typo'd key can never crash a page again.
 - Cleaned a duplicate `required` JSX attribute warning. Build OK (461 modules, no warnings).
 
-### Next steps (Phase 4)
-Technician mobile module — AS- job search, start/complete, photo upload (min 4/max 5), Normal/H-P type tagging, completion into the approval queue — see [plans/phase-04-technician-mobile/plan.md](plans/phase-04-technician-mobile/plan.md).
+### Phase 4 build ✅ (Technician Mobile Module)
+A technician can now log in on a phone, see today's assigned jobs, search any job by AS-, start it, upload photos, tag the service type, and complete it into the approval queue.
+
+**Backend** — extended the existing `/api/jobs` router (technicians are now allowed on their own jobs):
+- `GET /jobs/mine/today` (assigned + today, route order), `GET /jobs/by-agreement/:as_number` (all visits under an AS-).
+- `PATCH /jobs/:id/status` — `in_progress` / `completed`; completing requires `service_type_used` (normal|hp), stamps `completed_at`, leaves `admin_confirmed=FALSE` (→ approval queue).
+- `POST /jobs/:id/photos` (multer, field `photos`) — **max 5**, 5MB each, image-only; rolls back just-written files if the cap is exceeded. `GET /jobs/:id/photos` + `GET /jobs/:id/photos/:photoId` — authenticated list + file **stream** (not public static).
+- **Ownership guard** (`ownsJob`): a technician may only read/act on jobs where `technician_id = req.user.id`; office roles (admin/system_user) bypass. Per-route role guards replaced the blanket office-only `router.use`. `comment` opened to the assigned technician too.
+- New `job.model` methods (`myTodayJobs`, `listByAgreementNo`, `isOwnedBy`, `updateStatus`, `countPhotos`, `addPhoto`, `listPhotos`, `getPhoto`) and `config/upload.js` (disk storage, collision-safe filenames). Installed `multer`.
+
+**Frontend** — `client/src/pages/technician/`:
+- `TodayJobs.jsx` (replaces the `TechHome` placeholder at `/technician`) — today's assigned jobs as large tappable cards + a "Search a job" button.
+- `JobSearch.jsx` (`/technician/search`) — AS- lookup returning the agreement's visit list.
+- `JobDetail.jsx` (`/technician/jobs/:id`) — info tiles, **Start**, photo grid with `<input type="file" accept="image/*" capture="environment" multiple>` (authenticated blob-URL thumbnails, n/5 counter), Normal/H-P segmented selector, comment, sticky **Complete** bar; a "Completed → awaiting approval" banner once done.
+- `technician.api.js` + `postForm` (multipart) and authenticated `photoUrl` blob fetch on the client (JWT is in memory, so `<img src>` can't carry the header). Shared `TechJobCard`. Routes + role-aware catch-all redirect in `App.jsx`; Sidebar gains a "Find Job" item. Mobile-first CSS block (single-column, ≥44px targets, photo grid, sticky action bar).
+
+**Decision (client):** dropped the hard **min-4** completion gate — just upload photos; max 5 kept as a safety cap. Complete requires only a service-type choice.
+
+**Verified end-to-end** (live Docker DB, test server on :3100): admin created a technician + assigned a job → technician login → today list, AS- search, detail, start (`in_progress`), upload 2 photos (201), authenticated photo retrieval (200 image/png), unauthenticated blocked (401), max-5 cap (422 + file rollback verified: exactly 2 files on disk), ownership 403 on an unassigned job, completion blocked without service type (422) then succeeded → `pendingApprovals=1`. Client build OK (465 modules).
+
+### Next steps (Phase 5)
+Job completion approval workflow (admin confirms queued completions → finalize + loyalty/SMS) and renewals — see [plans/](plans/).

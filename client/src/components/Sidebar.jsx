@@ -18,6 +18,7 @@ const ICONS = {
   users: ['M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2', 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8', 'M23 21v-2a4 4 0 0 0-3-3.87', 'M16 3.13a4 4 0 0 1 0 7.75'],
   price: ['M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z', 'M7 7h.01'],
   jobs: ['M20 7h-3V4a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v3H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z'],
+  search: ['M21 21l-4.35-4.35', 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z'],
 };
 
 const NAV = {
@@ -41,7 +42,8 @@ const NAV = {
   ],
   technician: [
     { label: 'Work', items: [
-      { to: '/technician', icon: 'jobs', name: 'My Jobs' },
+      { to: '/technician', icon: 'jobs', name: 'My Jobs', end: true },
+      { to: '/technician/search', icon: 'search', name: 'Find Job' },
     ] },
   ],
 };
@@ -72,6 +74,7 @@ export default function Sidebar({ open, onNavigate }) {
               <NavLink
                 key={it.to}
                 to={it.to}
+                end={it.end}
                 onClick={onNavigate}
                 className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
               >

@@ -1,8 +1,11 @@
 /**
- * Jobs controller — calendar reads + admin lifecycle actions.
- * Guarded admin + system_user (technician actions come in Phase 4).
+ * Jobs controller — calendar reads + admin lifecycle actions + technician workflow.
  */
+const fs = require('fs');
+const path = require('path');
 const JobModel = require('../models/job.model');
+
+const MAX_PHOTOS = 5;
 
 const JobsController = {
   /** GET /api/jobs?month=YYYY-MM  or  ?date=YYYY-MM-DD */
@@ -88,6 +91,80 @@ const JobsController = {
   async comment(req, res, next) {
     try { res.json({ job: await JobModel.addComment(req.params.id, req.body?.comments) }); }
     catch (err) { next(err); }
+  },
+
+  // ---- Technician (Phase 4) ----
+
+  /** GET /api/jobs/mine/today — today's jobs assigned to the caller. */
+  async myToday(req, res, next) {
+    try { res.json({ jobs: await JobModel.myTodayJobs(req.user.id) }); }
+    catch (err) { next(err); }
+  },
+
+  /** GET /api/jobs/by-agreement/:as_number — all visits under an AS-. */
+  async byAgreement(req, res, next) {
+    try {
+      const jobs = await JobModel.listByAgreementNo(req.params.as_number);
+      if (!jobs.length) return res.status(404).json({ error: 'No jobs found for that AS- number' });
+      res.json({ jobs });
+    } catch (err) { next(err); }
+  },
+
+  /**
+   * PATCH /api/jobs/:id/status  { status, service_type_used }
+   * status: 'in_progress' | 'completed'. Completing requires service_type_used
+   * (normal|hp) and sends the job to the approval queue (admin_confirmed=FALSE).
+   */
+  async status(req, res, next) {
+    try {
+      const { status, service_type_used } = req.body || {};
+      if (!['in_progress', 'completed'].includes(status)) {
+        return res.status(400).json({ error: "status must be 'in_progress' or 'completed'" });
+      }
+      if (status === 'completed' && !['normal', 'hp'].includes(service_type_used)) {
+        return res.status(422).json({ error: 'service_type_used (normal|hp) is required to complete a job' });
+      }
+      res.json({ job: await JobModel.updateStatus(req.params.id, status, service_type_used || null) });
+    } catch (err) { next(err); }
+  },
+
+  /**
+   * POST /api/jobs/:id/photos  (multipart, field "photos")
+   * Enforces a hard cap of MAX_PHOTOS total; rolls back the just-written files if exceeded.
+   */
+  async uploadPhotos(req, res, next) {
+    try {
+      const jobId = req.params.id;
+      const files = req.files || [];
+      if (!files.length) return res.status(400).json({ error: 'No photos uploaded' });
+
+      const existing = await JobModel.countPhotos(jobId);
+      if (existing + files.length > MAX_PHOTOS) {
+        files.forEach((f) => fs.unlink(f.path, () => {}));
+        return res.status(422).json({ error: `Max ${MAX_PHOTOS} photos per job (already ${existing})` });
+      }
+
+      for (const f of files) {
+        await JobModel.addPhoto(jobId, `job_photos/${f.filename}`, req.user.id);
+      }
+      res.status(201).json({ photos: await JobModel.listPhotos(jobId) });
+    } catch (err) { next(err); }
+  },
+
+  /** GET /api/jobs/:id/photos — photo metadata list. */
+  async photos(req, res, next) {
+    try { res.json({ photos: await JobModel.listPhotos(req.params.id) }); }
+    catch (err) { next(err); }
+  },
+
+  /** GET /api/jobs/:id/photos/:photoId — authenticated file stream (not public static). */
+  async photoFile(req, res, next) {
+    try {
+      const row = await JobModel.getPhoto(req.params.id, req.params.photoId);
+      if (!row) return res.status(404).json({ error: 'Photo not found' });
+      const abs = path.join(__dirname, '..', 'uploads', row.photo_path);
+      res.sendFile(abs, (err) => { if (err && !res.headersSent) res.status(404).json({ error: 'File missing' }); });
+    } catch (err) { next(err); }
   },
 };
 

@@ -15,11 +15,13 @@ import Calendar from './pages/admin/Calendar';
 import JobSlot from './pages/admin/JobSlot';
 import DeletedJobs from './pages/admin/DeletedJobs';
 import JobCancellations from './pages/admin/JobCancellations';
-import TechHome from './pages/technician/TechHome';
+import TodayJobs from './pages/technician/TodayJobs';
+import JobSearch from './pages/technician/JobSearch';
+import JobDetail from './pages/technician/JobDetail';
 
 const office = ['admin', 'system_user'];
 
-function AnimatedRoutes() {
+function AnimatedRoutes({ home }) {
   const location = useLocation();
   return (
     <AnimatePresence mode="wait">
@@ -35,8 +37,10 @@ function AnimatedRoutes() {
           <Route path="/deleted-jobs" element={<ProtectedRoute roles={office}><DeletedJobs /></ProtectedRoute>} />
           <Route path="/users" element={<ProtectedRoute roles={['admin']}><AddUsers /></ProtectedRoute>} />
           <Route path="/pricing" element={<ProtectedRoute roles={['admin']}><AddPrice /></ProtectedRoute>} />
-          <Route path="/technician" element={<ProtectedRoute roles={['technician']}><TechHome /></ProtectedRoute>} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/technician" element={<ProtectedRoute roles={['technician']}><TodayJobs /></ProtectedRoute>} />
+          <Route path="/technician/search" element={<ProtectedRoute roles={['technician']}><JobSearch /></ProtectedRoute>} />
+          <Route path="/technician/jobs/:id" element={<ProtectedRoute roles={['technician']}><JobDetail /></ProtectedRoute>} />
+          <Route path="*" element={<Navigate to={home} replace />} />
         </Routes>
       </motion.div>
     </AnimatePresence>
@@ -55,10 +59,10 @@ export default function App() {
     );
   }
 
-  void user;
+  const home = user?.role === 'technician' ? '/technician' : '/dashboard';
   return (
     <Layout>
-      <AnimatedRoutes />
+      <AnimatedRoutes home={home} />
     </Layout>
   );
 }

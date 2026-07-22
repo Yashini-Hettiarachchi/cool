@@ -106,6 +106,87 @@ const JobModel = {
     return rows;
   },
 
+  // ---- Technician (Phase 4) ----
+
+  /** Today's jobs assigned to a technician, in route order. */
+  async myTodayJobs(technicianId) {
+    const [rows] = await pool.query(
+      `${JOB_JOIN}
+        WHERE j.is_deleted = FALSE
+          AND j.technician_id = ?
+          AND j.scheduled_date = CURDATE()
+        ORDER BY c.route, j.id`,
+      [technicianId]
+    );
+    return rows;
+  },
+
+  /** All (non-deleted) visits under an AS- number — for technician AS- search. */
+  async listByAgreementNo(agreementNo) {
+    const [rows] = await pool.query(
+      `${JOB_JOIN} WHERE j.is_deleted = FALSE AND a.agreement_no = ? ORDER BY j.scheduled_date, j.id`,
+      [agreementNo]
+    );
+    return rows;
+  },
+
+  /** Owner check — does this job belong to the given technician? */
+  async isOwnedBy(id, technicianId) {
+    const [[row]] = await pool.query('SELECT technician_id FROM jobs WHERE id = ? LIMIT 1', [id]);
+    return !!row && row.technician_id === technicianId;
+  },
+
+  /**
+   * Technician status transition.
+   *   in_progress → just flips status.
+   *   completed   → records service_type_used, stamps completed_at, and leaves
+   *                 admin_confirmed = FALSE so it lands in the approval queue.
+   */
+  async updateStatus(id, status, serviceTypeUsed) {
+    if (status === 'completed') {
+      await pool.query(
+        `UPDATE jobs
+            SET status = 'completed', service_type_used = ?,
+                completed_at = NOW(), admin_confirmed = FALSE
+          WHERE id = ?`,
+        [serviceTypeUsed, id]
+      );
+    } else {
+      await pool.query('UPDATE jobs SET status = ? WHERE id = ?', [status, id]);
+    }
+    return this.detail(id);
+  },
+
+  async countPhotos(jobId) {
+    const [[{ n }]] = await pool.query('SELECT COUNT(*) n FROM job_photos WHERE job_id = ?', [jobId]);
+    return n;
+  },
+
+  async addPhoto(jobId, photoPath, uploadedBy) {
+    const [result] = await pool.query(
+      'INSERT INTO job_photos (job_id, photo_path, uploaded_by) VALUES (?, ?, ?)',
+      [jobId, photoPath, uploadedBy]
+    );
+    return { id: result.insertId, job_id: jobId, photo_path: photoPath };
+  },
+
+  async listPhotos(jobId) {
+    const [rows] = await pool.query(
+      'SELECT id, job_id, photo_path, uploaded_at FROM job_photos WHERE job_id = ? ORDER BY id',
+      [jobId]
+    );
+    return rows;
+  },
+
+  /** Single photo row (for authenticated file streaming). */
+  async getPhoto(jobId, photoId) {
+    const [[row]] = await pool.query(
+      'SELECT id, job_id, photo_path FROM job_photos WHERE id = ? AND job_id = ? LIMIT 1',
+      [photoId, jobId]
+    );
+    return row || null;
+  },
+
   /** Active technicians for the assignment dropdown. */
   async listTechnicians() {
     const [rows] = await pool.query(
