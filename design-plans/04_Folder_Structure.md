@@ -89,7 +89,7 @@ ac-service-app/                       # Application root on cPanel
 │   │   │   ├── reports.api.js
 │   │   │   ├── users.api.js          # NEW
 │   │   │   └── pricing.api.js        # NEW
-│   │   ├── App.jsx                   # React Router route definitions
+│   │   ├── App.jsx                   # React Router route definitions (basename="/admin")
 │   │   └── index.js
 │   ├── build/                        # Production build output (uploaded to server/, served by Express)
 │   └── package.json
@@ -118,3 +118,4 @@ ac-service-app/                       # Application root on cPanel
 - **`client/build/`** is generated, not hand-written — regenerate with `npm run build` inside `client/` whenever frontend code changes, then it gets served by `server/app.js`.
 - **`uploads/job_photos/`** lives inside `server/`, not `client/public/` or any public-facing folder — this is what keeps photos from being directly browsable by URL guessing.
 - **`.env`** holds all secrets and is never committed to Git — cPanel's Node.js App interface also lets you set these as environment variables directly in its UI.
+- **Routing note (revised):** the root domain is reserved for a future company showcase site — this entire application (Admin + Technician) is mounted under `/admin` via Express (`app.use('/admin', ...)`) and React Router's `basename="/admin"`, so no folder here needs restructuring, only the routing configuration in `app.js` and `App.jsx`.

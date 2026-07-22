@@ -230,25 +230,32 @@ flowchart LR
 
 ---
 
-## 7. URL / Routing Structure
+## 7. URL / Routing Structure (Revised — entire system under /admin)
+
+> Root domain reserved for a future company showcase site (not built yet). The whole system — Admin and Technician sections both — sits under a single `/admin` base path.
 
 ```mermaid
 flowchart LR
-    Root["yourdomain.lk/"] --> LoginPg["Login Page"]
-    Root --> AdminR["/admin/*"]
-    Root --> TechR["/technician/*"]
-    AdminR --> Dash2["/admin/dashboard"]
-    AdminR --> Cust2["/admin/customers"]
-    AdminR --> Cal2["/admin/calendar"]
-    AdminR --> Arch2["/admin/archive"]
-    AdminR --> Rep2["/admin/reports"]
-    TechR --> Today2["/technician/jobs"]
-    TechR --> JobDetail2["/technician/job/:asNumber"]
+    Root["yourdomain.lk/"] --> Future["Reserved — future showcase site (not built yet)"]
+    AdminBase["yourdomain.lk/admin/"] --> LoginPg["Login Page"]
+    AdminBase --> Dash2["/admin/dashboard"]
+    AdminBase --> Cust2["/admin/customers"]
+    AdminBase --> Cal2["/admin/calendar"]
+    AdminBase --> Arch2["/admin/archive"]
+    AdminBase --> Rep2["/admin/reports"]
+    AdminBase --> JCR2["/admin/job-complete-requests"]
+    AdminBase --> Del2["/admin/deleted-jobs"]
+    AdminBase --> Cancel2["/admin/cancellations"]
+    AdminBase --> Users2["/admin/users (Admin only)"]
+    AdminBase --> Price2["/admin/pricing (Admin only)"]
+    AdminBase --> TechR["/admin/technician/*"]
+    TechR --> Today2["/admin/technician/jobs"]
+    TechR --> JobDetail2["/admin/technician/job/:asNumber"]
 ```
 
 ---
 
-## 8. Deployment / Request Routing on cPanel
+## 8. Deployment / Request Routing on cPanel (Revised)
 
 ```mermaid
 flowchart LR
@@ -256,5 +263,6 @@ flowchart LR
     Domain --> Passenger["Passenger (Node.js Selector)"]
     Passenger --> ExpressApp["Express App"]
     ExpressApp -->|"path starts with /api"| ApiRoutes["API Routes → Controllers → MySQL"]
-    ExpressApp -->|"any other path"| StaticBuild["Serve React build/index.html"]
+    ExpressApp -->|"path starts with /admin"| StaticBuild["Serve React build/index.html (basename=/admin)"]
+    ExpressApp -->|"path is / (root)"| Placeholder["Placeholder page or redirect to /admin<br/>(future: showcase site)"]
 ```

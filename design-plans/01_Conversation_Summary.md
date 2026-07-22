@@ -98,3 +98,7 @@ This conversation asked for a complete, implementation-ready markdown package, s
 9. `09_Diagrams.md` — all diagrams (architecture, ERD, data flow) in Mermaid format
 10. `10_Tech_Stack.md` — confirmed stack and why it aligns with Node.js + MySQL
 11. `MEMORY.md` — condensed reference memory of this entire project/conversation
+
+## 9. Addendum — Routing Revision (Root Path Reserved)
+
+After reviewing a routing diagram, the client clarified: the root domain (`yourdomain.lk/`) is reserved for a **future company showcase/marketing site** (not part of this system, to be built later). **The entire system — both Admin and Technician sections — now sits under a single `/admin` base path** instead of splitting `/admin` and `/technician` at the root level. Express now serves the React build only under `/admin/*`; React Router uses `basename="/admin"`. Updated in `03_System_Architecture.md`, `09_Diagrams.md`, `04_Folder_Structure.md`, `05_Overall_Design_Plan.md`, and `MEMORY.md`.

@@ -64,8 +64,8 @@ Each technician has an **individual login**.
 10. Photos: **min 4, max 5** per job, 5MB each, uploaded directly from the technician's phone
 11. **New:** Pricing is centrally managed by Admin, applied as a default when creating agreements, still editable per agreement
 
-## 7. Deployment Model — unchanged
-One hosting account (cPanel, Node.js/Python Silver) runs everything. (Full architecture in `03_System_Architecture.md`.)
+## 7. Deployment Model — Revised (root path reserved)
+One hosting account (cPanel, Node.js/Python Silver) runs everything. **New:** the root domain (`yourdomain.lk/`) is reserved for a future company showcase site (not built yet, later phase) — the entire system (Admin + Technician) is mounted under `/admin` instead. (Full architecture in `03_System_Architecture.md`.)
 
 ## 8. Cost Summary — unchanged
 See `AC_System_Budget_Proposal.docx` for the full breakdown (hosting, domain, SMS).

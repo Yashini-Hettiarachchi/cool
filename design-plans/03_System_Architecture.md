@@ -41,13 +41,17 @@ flowchart TB
 
 - Express serves two things from the same process:
   1. **`/api/*`** routes — all business logic (auth, customers, agreements, jobs, sms, reports)
-  2. **Everything else** — the React production build's static files (`index.html`, JS, CSS)
+  2. **`/admin/*`** — the React production build's static files (`index.html`, JS, CSS) — the entire system (Admin + Technician sections) lives under this one path prefix, since the root domain is reserved for a future showcase site
 
 ```js
 // app.js — the core of how backend + frontend coexist in one app
 app.use('/api', apiRouter);
-app.use(express.static('client/build'));
-app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'client/build/index.html')));
+app.use('/admin', express.static('client/build'));
+app.get('/admin/*', (req, res) => res.sendFile(path.join(__dirname, 'client/build/index.html')));
+
+// Root path: reserved for a future showcase site.
+// For now, simplest options are a placeholder page, or a redirect straight into the system:
+app.get('/', (req, res) => res.redirect('/admin'));
 ```
 
 - Backend talks to **MySQL** on `localhost` (same server) via `mysql2` or an ORM (Sequelize/Knex)
@@ -58,22 +62,28 @@ app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'client/build/index
 
 ## 3. Frontend Layer (React)
 
-- Built locally (or in CI) via `npm run build` → produces a static `build/` folder
-- That folder is uploaded into the Node app's directory and served by Express (see above) — **no separate hosting needed**
-- **React Router** handles all client-side paths:
+- **Built locally** (or in CI) via `npm run build` → produces a static `build/` folder
+- That folder is uploaded into the Node app's directory and served by Express — **no separate hosting needed**
+- **Revised routing decision:** the root domain (`yourdomain.lk/`) is reserved for a future company showcase/marketing site (not part of this system, to be built later). **The entire system — both Admin and Technician sections — is mounted under a single `/admin` base path** for now.
+- **React Router** uses a `basename="/admin"` so all internal routes sit under that prefix automatically:
 
 ```mermaid
 flowchart LR
-    Root["/"] --> Login["Login Page"]
-    Root --> Admin["/admin/*"]
-    Root --> Tech["/technician/*"]
-    Admin --> Dash["/admin/dashboard"]
-    Admin --> Cust["/admin/customers"]
-    Admin --> Cal["/admin/calendar"]
-    Admin --> Arch["/admin/archive"]
-    Admin --> Rep["/admin/reports"]
-    Tech --> Today["/technician/jobs"]
-    Tech --> JobDetail["/technician/job/:asNumber"]
+    Root["yourdomain.lk/"] --> Future["(Reserved for future showcase site — not built yet)"]
+    AdminBase["yourdomain.lk/admin/"] --> Login["Login Page"]
+    AdminBase --> Dash["/admin/dashboard"]
+    AdminBase --> Cust["/admin/customers"]
+    AdminBase --> Cal["/admin/calendar"]
+    AdminBase --> Arch["/admin/archive"]
+    AdminBase --> Rep["/admin/reports"]
+    AdminBase --> JCR["/admin/job-complete-requests"]
+    AdminBase --> Del["/admin/deleted-jobs"]
+    AdminBase --> Cancel["/admin/cancellations"]
+    AdminBase --> Users["/admin/users (Admin only)"]
+    AdminBase --> Price["/admin/pricing (Admin only)"]
+    AdminBase --> TechBase["/admin/technician/*"]
+    TechBase --> Today["/admin/technician/jobs"]
+    TechBase --> JobDetail["/admin/technician/job/:asNumber"]
 ```
 
 - Role-based route guards on the frontend (redirect if wrong role) — but the **real** security is backend-side JWT role checks on every API call, since URLs alone are not protection
@@ -97,7 +107,8 @@ flowchart LR
 
 **Domain routing:**
 - Once the `.lk` domain is purchased and pointed to this hosting account (post-development, before go-live), it's attached as the app's Application URL
-- Requests to `highcool.lk`, `highcool.lk/admin`, `highcool.lk/technician/job/AS-00123` all hit the same Express catch-all, and React Router renders the correct screen client-side
+- Requests to `highcool.lk/admin`, `highcool.lk/admin/dashboard`, `highcool.lk/admin/technician/job/AS-00123` all hit the Express `/admin/*` catch-all, and React Router (with `basename="/admin"`) renders the correct screen client-side
+- `highcool.lk/` itself is reserved for the future showcase site — for now it can either show a simple placeholder or redirect straight into `/admin`
 
 **Deployment workflow:**
 1. Push code via cPanel's Git Version Control (or SFTP/File Manager)

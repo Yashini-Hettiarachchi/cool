@@ -17,6 +17,11 @@ Web-based **AC Service Management System** for an AC servicing company. Manages 
 - SMS: **Text.lk** (confirmed twice — pay-as-you-go, no setup fee, Rs 0.64–0.84/SMS)
 - Deployment: single Express app serves both API and React static build — no separate frontend hosting
 
+## URL Structure — REVISED (root path reserved for future showcase site)
+The root domain (`yourdomain.lk/`) is **reserved for a future company showcase/marketing site** — not part of this system, to be built at a later stage (not now). **The entire system — both Admin and Technician sections — is mounted under a single `/admin` base path** instead of splitting across `/admin` and `/technician` at the root level. React Router uses `basename="/admin"`; Express serves the React build only under `/admin/*` (`app.use('/admin', express.static(...))` + `app.get('/admin/*', ...)`), leaving `/` free for the future site (currently a placeholder or redirect to `/admin`).
+
+Example paths: `yourdomain.lk/admin/` (login), `/admin/dashboard`, `/admin/customers`, `/admin/calendar`, `/admin/technician/jobs`, `/admin/technician/job/:asNumber`.
+
 ## Domain Status
 **Not yet purchased.** Will be bought (~4,500–5,000 LKR/year) **after** development is complete, just before go-live.
 
@@ -68,7 +73,7 @@ Search by ID/AS-/Phone ("Renew AC" screen) → loads the **same form** as New Ag
 - Renewal → **new** AS- number issued, linked to old via `parent_agreement_id`, old marked `renewed` (never overwritten)
 - Cancellation → soft-delete only, moves to Archive/Job Cancellations, **never** hard-deleted
 - SMS fires at 3 points: **Activation** (on registration), **Reminder** (1 day before scheduled job — via daily cron), **Completion** (on **admin confirmation**, not technician tap)
-- URL structure: path-based (`highcool.lk/admin`, `highcool.lk/technician`), confirmed via wireframe (`www.highcool.lk/agreements` shown explicitly)
+- URL structure: **see "URL Structure — REVISED" section above** — root reserved for future showcase site, entire system now under `/admin`
 
 ## Database — now 9 Tables (was 7)
 `customers`, `ac_units` (expanded), `agreements` (revised), `jobs` (expanded), `job_photos`, `sms_logs`, `users` (3 roles), **`pricing` (new)**.
@@ -114,3 +119,4 @@ Technician: Login, Today's Jobs, Job Search, Job Detail (now includes photo min/
 - ~~Technician "Complete" tap = instantly done + SMS sent~~ → **Goes to Job Complete Requests queue; Admin confirmation triggers SMS**
 - ~~Job card: print only~~ → **Print + Download PDF**
 - ~~One "Archive" view for everything cancelled~~ → **Archive (agreements) + Deleted Jobs + Job Cancellations are three distinct views**
+- ~~Root domain (`/`) serves the system's login page, `/technician` at root level~~ → **Root reserved for a future showcase site; entire system (Admin + Technician) moved under `/admin`**
