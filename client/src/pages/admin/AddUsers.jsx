@@ -80,31 +80,32 @@ export default function AddUsers() {
       <p className="muted">Add, update, or deactivate System User and Technician accounts.</p>
 
       <form onSubmit={handleSubmit} className="form-grid">
-        <label>
-          Name
-          <input value={form.name} onChange={(e) => set('name', e.target.value)} required />
+        <label className="field">
+          <span className="field-label">Name <b className="req">*</b></span>
+          <input value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="e.g. Kamal Perera" required />
         </label>
-        <label>
-          Username
-          <input value={form.username} onChange={(e) => set('username', e.target.value)} autoComplete="off" required />
+        <label className="field">
+          <span className="field-label">Username <b className="req">*</b></span>
+          <input value={form.username} onChange={(e) => set('username', e.target.value)} placeholder="Used to log in" autoComplete="off" required />
         </label>
-        <label>
-          Phone
-          <input value={form.phone} onChange={(e) => set('phone', e.target.value)} />
+        <label className="field">
+          <span className="field-label">Phone</span>
+          <input value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="Contact number (optional)" />
         </label>
-        <label>
-          Role
+        <label className="field">
+          <span className="field-label">Role</span>
           <select value={form.role} onChange={(e) => set('role', e.target.value)}>
             <option value="technician">Technician</option>
             <option value="system_user">System User</option>
           </select>
         </label>
-        <label>
-          Password {editingId && <span className="muted">(leave blank to keep)</span>}
+        <label className="field span-2">
+          <span className="field-label">Password {editingId ? <span className="hint">— leave blank to keep current</span> : <b className="req">*</b>}</span>
           <input
             type="password"
             value={form.password}
             onChange={(e) => set('password', e.target.value)}
+            placeholder={editingId ? '••••••••' : 'Set a password'}
             required={!editingId}
           />
         </label>
@@ -114,7 +115,7 @@ export default function AddUsers() {
 
         <div className="form-actions">
           <button type="submit" disabled={busy}>
-            {editingId ? 'Update user' : 'Add user'}
+            {editingId ? 'Update user' : '+ Add user'}
           </button>
           {editingId && <button type="button" className="secondary" onClick={resetForm}>Cancel</button>}
         </div>

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { agreementsApi } from '../../api/agreements.api';
 import { customersApi } from '../../api/customers.api';
 import { pricingApi } from '../../api/pricing.api';
+import { tap } from '../../lib/motion';
 
 const PERIODS = [30, 60, 90, 120];
 
@@ -21,7 +23,6 @@ export default function NewAgreement() {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
 
-  // Preload existing customer if arriving from a profile, and default pricing.
   useEffect(() => {
     pricingApi.list().then(({ pricing }) => {
       const d = { normal: null, hp: null };
@@ -59,8 +60,7 @@ export default function NewAgreement() {
           amount_paid: Number(agreement.amount_paid),
         },
       };
-      const res = await agreementsApi.create(payload);
-      setResult(res);
+      setResult(await agreementsApi.create(payload));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -70,23 +70,24 @@ export default function NewAgreement() {
 
   if (result) {
     return (
-      <div className="card">
+      <div className="card success-card">
+        <div className="success-badge">✓</div>
         <h1>Agreement created</h1>
-        <p className="notice">
-          Number <strong>{result.agreement.agreement_no}</strong> — {result.jobsCreated} service visit(s) scheduled.
-          Activation SMS: <strong>{result.sms}</strong>.
+        <p className="muted">
+          Number <span className="mono chip">{result.agreement.agreement_no}</span> — {result.jobsCreated} service
+          visit(s) scheduled. Activation SMS: <strong>{result.sms}</strong>.
         </p>
         <table className="table">
           <thead><tr><th>#</th><th>Scheduled date</th><th>Status</th></tr></thead>
           <tbody>
             {result.jobs.map((j, i) => (
-              <tr key={j.id}><td>{i + 1}</td><td>{j.scheduled_date}</td><td>{j.status}</td></tr>
+              <tr key={j.id}><td>{i + 1}</td><td>{j.scheduled_date}</td><td><span className={`badge st-${j.status}`}>{j.status}</span></td></tr>
             ))}
           </tbody>
         </table>
         <div className="form-actions">
-          <button onClick={() => navigate(`/customers/${result.agreement.customer_id}`)}>View customer</button>
-          <button className="secondary" onClick={() => { setResult(null); navigate('/agreements/new'); }}>Create another</button>
+          <motion.button {...tap} onClick={() => navigate(`/customers/${result.agreement.customer_id}`)}>View customer</motion.button>
+          <motion.button {...tap} className="secondary" onClick={() => { setResult(null); navigate('/agreements/new'); }}>Create another</motion.button>
         </div>
       </div>
     );
@@ -96,56 +97,127 @@ export default function NewAgreement() {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="card">
-        <h1>New Agreement (Create Job)</h1>
-        <p className="muted">Enter customer + AC unit + agreement. Data is entered only after full payment is confirmed.</p>
-
-        <h2>Customer {lockedCustomer && <span className="muted">(existing)</span>}</h2>
-        <div className="form-grid">
-          <label>Name<input value={customer.name} onChange={(e) => setC('name', e.target.value)} disabled={lockedCustomer} required /></label>
-          <label>Phone<input value={customer.phone} onChange={(e) => setC('phone', e.target.value)} disabled={lockedCustomer} required /></label>
-          <label>NIC<input value={customer.nic} onChange={(e) => setC('nic', e.target.value)} disabled={lockedCustomer} required /></label>
-          <label>Route<input value={customer.route} onChange={(e) => setC('route', e.target.value)} disabled={lockedCustomer} /></label>
-          <label className="span-2">Address<input value={customer.address} onChange={(e) => setC('address', e.target.value)} disabled={lockedCustomer} /></label>
+      {/* 1 — Customer */}
+      <section className="card form-section">
+        <div className="fs-head">
+          <span className="fs-num">1</span>
+          <div>
+            <h2>Customer {lockedCustomer && <span className="muted" style={{ fontWeight: 400 }}>· existing</span>}</h2>
+            <p>Who the agreement is for. Data is entered only after full payment is confirmed.</p>
+          </div>
         </div>
-        {lockedCustomer && <button type="button" className="link" onClick={() => { setLockedCustomer(false); setC('id', null); }}>Edit / use different customer</button>}
-      </div>
-
-      <div className="card">
-        <h2>AC Unit</h2>
         <div className="form-grid">
-          <label>Brand<input value={acUnit.brand} onChange={(e) => setA('brand', e.target.value)} /></label>
-          <label>Model<input value={acUnit.model} onChange={(e) => setA('model', e.target.value)} /></label>
-          <label>Serial (Indoor)<input value={acUnit.serial_indoor} onChange={(e) => setA('serial_indoor', e.target.value)} /></label>
-          <label>Serial (Outdoor)<input value={acUnit.serial_outdoor} onChange={(e) => setA('serial_outdoor', e.target.value)} /></label>
-          <label className="span-2">Install notes<input value={acUnit.install_notes} onChange={(e) => setA('install_notes', e.target.value)} /></label>
-        </div>
-      </div>
-
-      <div className="card">
-        <h2>Agreement</h2>
-        <p className="muted">
-          Default prices — Normal: {defaults.normal ?? '—'}, H/P: {defaults.hp ?? '—'} (LKR). Set the agreed price below.
-        </p>
-        <div className="form-grid">
-          <label>Normal visits<input type="number" min="0" value={agreement.normal_count} onChange={(e) => setG('normal_count', e.target.value)} /></label>
-          <label>H/P visits<input type="number" min="0" value={agreement.hp_count} onChange={(e) => setG('hp_count', e.target.value)} /></label>
-          <label>Period (days)
-            <select value={agreement.period_days} onChange={(e) => setG('period_days', e.target.value)}>
-              {PERIODS.map((p) => <option key={p} value={p}>{p}</option>)}
-            </select>
+          <label className="field">
+            <span className="field-label">Name <b className="req">*</b></span>
+            <input value={customer.name} onChange={(e) => setC('name', e.target.value)} placeholder="e.g. Nimal Silva" disabled={lockedCustomer} required />
           </label>
-          <label>Price (LKR)<input type="number" min="0" step="0.01" value={agreement.price} onChange={(e) => setG('price', e.target.value)} placeholder={defaults.normal ?? ''} /></label>
-          <label>Amount paid (LKR)<input type="number" min="0" step="0.01" value={agreement.amount_paid} onChange={(e) => setG('amount_paid', e.target.value)} required /></label>
+          <label className="field">
+            <span className="field-label">Phone <b className="req">*</b></span>
+            <input value={customer.phone} onChange={(e) => setC('phone', e.target.value)} placeholder="e.g. 0712223334" disabled={lockedCustomer} required />
+          </label>
+          <label className="field">
+            <span className="field-label">NIC <b className="req">*</b></span>
+            <input value={customer.nic} onChange={(e) => setC('nic', e.target.value)} placeholder="e.g. 911234567V" disabled={lockedCustomer} required />
+          </label>
+          <label className="field">
+            <span className="field-label">Route</span>
+            <input value={customer.route} onChange={(e) => setC('route', e.target.value)} placeholder="Delivery route (Sinhala supported)" disabled={lockedCustomer} />
+          </label>
+          <label className="field span-2">
+            <span className="field-label">Address</span>
+            <input value={customer.address} onChange={(e) => setC('address', e.target.value)} placeholder="Street, city" disabled={lockedCustomer} />
+          </label>
         </div>
-        <p className="muted">{total} visit(s) will be scheduled, {agreement.period_days} days apart over 1 year.</p>
+        {lockedCustomer && (
+          <button type="button" className="link" onClick={() => { setLockedCustomer(false); setC('id', null); }}>Edit / use a different customer</button>
+        )}
+      </section>
+
+      {/* 2 — AC Unit */}
+      <section className="card form-section">
+        <div className="fs-head">
+          <span className="fs-num">2</span>
+          <div><h2>AC Unit</h2><p>The unit this agreement covers — each unit gets its own AS- number.</p></div>
+        </div>
+        <div className="form-grid">
+          <label className="field">
+            <span className="field-label">Brand</span>
+            <input value={acUnit.brand} onChange={(e) => setA('brand', e.target.value)} placeholder="e.g. Daikin" />
+          </label>
+          <label className="field">
+            <span className="field-label">Model</span>
+            <input value={acUnit.model} onChange={(e) => setA('model', e.target.value)} placeholder="e.g. FTKF35" />
+          </label>
+          <label className="field">
+            <span className="field-label">Serial — Indoor</span>
+            <input value={acUnit.serial_indoor} onChange={(e) => setA('serial_indoor', e.target.value)} placeholder="Indoor unit serial" />
+          </label>
+          <label className="field">
+            <span className="field-label">Serial — Outdoor</span>
+            <input value={acUnit.serial_outdoor} onChange={(e) => setA('serial_outdoor', e.target.value)} placeholder="Outdoor unit serial" />
+          </label>
+          <label className="field span-2">
+            <span className="field-label">Install notes</span>
+            <input value={acUnit.install_notes} onChange={(e) => setA('install_notes', e.target.value)} placeholder="Anything worth noting about the installation" />
+          </label>
+        </div>
+      </section>
+
+      {/* 3 — Agreement */}
+      <section className="card form-section">
+        <div className="fs-head">
+          <span className="fs-num">3</span>
+          <div><h2>Service Plan</h2><p>Allocate the year's visits and confirm pricing.</p></div>
+        </div>
+        <div className="form-grid">
+          <label className="field">
+            <span className="field-label">Normal visits</span>
+            <input type="number" min="0" value={agreement.normal_count} onChange={(e) => setG('normal_count', e.target.value)} />
+            <span className="hint">Default price: {defaults.normal ? `LKR ${defaults.normal}` : '—'}</span>
+          </label>
+          <label className="field">
+            <span className="field-label">H/P visits</span>
+            <input type="number" min="0" value={agreement.hp_count} onChange={(e) => setG('hp_count', e.target.value)} />
+            <span className="hint">Default price: {defaults.hp ? `LKR ${defaults.hp}` : '—'}</span>
+          </label>
+          <div className="field span-2">
+            <span className="field-label">Period between visits</span>
+            <div className="seg" role="group" aria-label="Period in days">
+              {PERIODS.map((p) => (
+                <button type="button" key={p} className={Number(agreement.period_days) === p ? 'active' : ''} onClick={() => setG('period_days', p)}>
+                  {p} days
+                </button>
+              ))}
+            </div>
+          </div>
+          <label className="field">
+            <span className="field-label">Agreed price (LKR)</span>
+            <div className="input-prefix">
+              <span>Rs</span>
+              <input type="number" min="0" step="0.01" value={agreement.price} onChange={(e) => setG('price', e.target.value)} placeholder={defaults.normal ?? '0.00'} />
+            </div>
+          </label>
+          <label className="field">
+            <span className="field-label">Amount paid (LKR) <b className="req">*</b></span>
+            <div className="input-prefix">
+              <span>Rs</span>
+              <input type="number" min="0" step="0.01" value={agreement.amount_paid} onChange={(e) => setG('amount_paid', e.target.value)} placeholder="0.00" required />
+            </div>
+          </label>
+        </div>
+
+        <div className="form-note">
+          <span>📅</span>
+          <span><b>{total}</b> visit{total === 1 ? '' : 's'} will be scheduled, <b>{agreement.period_days}</b> days apart across a 1-year agreement.</span>
+        </div>
 
         {error && <p className="error">{error}</p>}
-        <div className="form-actions">
-          <button type="submit" disabled={busy}>{busy ? 'Creating…' : 'Create agreement'}</button>
-          <button type="button" className="secondary" onClick={() => navigate('/customers')}>Cancel</button>
+
+        <div className="form-bar">
+          <motion.button type="button" {...tap} className="secondary" onClick={() => navigate('/customers')}>Cancel</motion.button>
+          <motion.button type="submit" {...tap} disabled={busy}>{busy ? 'Creating…' : 'Create agreement'}</motion.button>
         </div>
-      </div>
+      </section>
     </form>
   );
 }

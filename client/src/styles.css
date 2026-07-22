@@ -214,6 +214,55 @@ select { cursor: pointer; }
 *::-webkit-scrollbar { width: 10px; height: 10px; }
 *::-webkit-scrollbar-thumb { background: #cfd6dd; border-radius: 10px; border: 2px solid transparent; background-clip: content-box; }
 *::-webkit-scrollbar-thumb:hover { background: #b4bcc6; background-clip: content-box; }
+
+/* ---------- Friendly form UX ---------- */
+/* Numbered section header */
+.fs-head { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.fs-num { width: 34px; height: 34px; flex-shrink: 0; border-radius: 10px; display: grid; place-items: center;
+  background: var(--brand-tint); color: var(--brand); font-family: var(--font-display); font-weight: 700; font-size: 15px; }
+.fs-head h2 { margin: 0; font-size: 17px; }
+.fs-head p { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+
+/* Field = label + control + optional hint, stacked */
+.field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+.field-label { font-size: 13px; font-weight: 600; color: var(--ink); }
+.field .req { color: var(--brand); margin-left: 2px; }
+.field .hint { font-size: 12px; color: var(--faint); font-weight: 400; }
+.field input, .field select { margin-top: 0; }
+
+/* Input affordances */
+input, select { padding: 11px 13px; }
+.input-prefix { position: relative; }
+.input-prefix > span { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--faint); font-size: 14px; pointer-events: none; }
+.input-prefix input { padding-left: 34px; }
+
+/* Segmented control (e.g. service period) */
+.seg { display: inline-flex; gap: 4px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 4px; }
+.seg button { background: transparent; color: var(--muted); border: none; padding: 8px 16px; border-radius: 7px; font-size: 14px; box-shadow: none; }
+.seg button:hover { background: transparent; color: var(--ink); transform: none; box-shadow: none; filter: none; }
+.seg button.active { background: var(--surface); color: var(--brand); box-shadow: var(--shadow-sm); }
+
+/* Sticky action bar at the foot of a form */
+.form-bar { position: sticky; bottom: 0; display: flex; justify-content: flex-end; gap: 12px;
+  background: rgba(255,255,255,.92); backdrop-filter: blur(6px); border-top: 1px solid var(--border);
+  margin: 4px -20px -20px; padding: 16px 20px; border-radius: 0 0 var(--radius) var(--radius); z-index: 5; }
+.form-bar .spacer { margin-right: auto; }
+
+/* Summary callout (e.g. "4 visits will be scheduled") */
+.form-note { display: flex; align-items: center; gap: 10px; background: var(--brand-050); border: 1px solid var(--brand-tint);
+  border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--ink); margin: 6px 0 4px; }
+.form-note b { color: var(--brand); }
+
+/* Mono chip (AS- numbers, ids) */
+.chip { display: inline-block; background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+  padding: 2px 8px; font-size: 13px; font-weight: 600; color: var(--ink); }
+
+/* Success view (after creating an agreement) */
+.success-card { text-align: center; }
+.success-card .table { text-align: left; }
+.success-card .form-actions { justify-content: center; }
+.success-badge { width: 56px; height: 56px; margin: 0 auto 14px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--st-completed); color: #fff; font-size: 28px; font-weight: 700; box-shadow: 0 8px 24px rgba(47,143,78,.35); }
 .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 20px; }
 .form-actions { grid-column: 1 / -1; display: flex; gap: 10px; margin-top: 6px; }
 .span-2 { grid-column: 1 / -1; }

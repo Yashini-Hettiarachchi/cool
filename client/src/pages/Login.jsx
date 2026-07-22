@@ -70,12 +70,12 @@ export default function Login() {
           <h1>Sign in</h1>
           <p className="muted" style={{ marginTop: 0, marginBottom: 24 }}>Enter your credentials to continue.</p>
           <form onSubmit={handleSubmit}>
-            <label>
-              Username
+            <label className="field">
+              <span className="field-label">Username</span>
               <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" placeholder="admin" required />
             </label>
-            <label>
-              Password
+            <label className="field">
+              <span className="field-label">Password</span>
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" placeholder="••••••••" required />
             </label>
             {error && <p className="error">{error}</p>}
