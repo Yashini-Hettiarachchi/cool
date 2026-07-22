@@ -13,7 +13,7 @@ The source of truth for *what* to build lives in [`../design-plans/`](../design-
 |---|---|---|---|
 | 1 | [phase-01-setup-db-auth](phase-01-setup-db-auth/) | Project setup, DB schema, authentication, users & pricing | ✅ Complete & verified end-to-end |
 | 2 | [phase-02-customer-agreement](phase-02-customer-agreement/) | Customer & agreement registration, AS- numbering, scheduler | ✅ Complete & verified end-to-end |
-| 3 | [phase-03-calendar-scheduling](phase-03-calendar-scheduling/) | Calendar, assignment, postpone/cancel/soft-delete | ⚪ Not started |
+| 3 | [phase-03-calendar-scheduling](phase-03-calendar-scheduling/) | Calendar, assignment, postpone/cancel/soft-delete | ✅ Complete & verified end-to-end |
 | 4 | [phase-04-technician-mobile](phase-04-technician-mobile/) | Technician mobile module, photo upload, type tagging | ⚪ Not started |
 | 5 | [phase-05-sms-complete-requests](phase-05-sms-complete-requests/) | SMS automation, reminder cron, Job Complete Requests | ⚪ Not started |
 | 6 | [phase-06-jobcard-print-pdf](phase-06-jobcard-print-pdf/) | Job card print & PDF view | ⚪ Not started |

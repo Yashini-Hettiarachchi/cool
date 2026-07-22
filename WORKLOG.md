@@ -88,5 +88,10 @@ Client clarified login must use **username + password**, not phone. Applied end-
 
 **Note:** Sinhala `route` showed `??????` in curl tests — a Windows-terminal arg-encoding artifact, not a DB issue (DB + pool are utf8mb4). Confirm with real browser input.
 
-### Next steps (Phase 3)
-Calendar, technician assignment, postpone/cancel/soft-delete, Deleted Jobs & Cancellations views — see [plans/phase-03-calendar-scheduling/plan.md](plans/phase-03-calendar-scheduling/plan.md).
+### Phase 3 build ✅ (Calendar, Assignment, Postpone/Cancel/Soft-delete)
+**Backend:** `job.model` (month/day queries with customer+AC+technician joins, detail w/ photo count, assign, postpone, cancel, softDelete, addComment, listDeleted, listCancelled, listTechnicians) + `jobs.controller` + `jobs.routes` (guarded admin+system_user; static paths ordered before `/:id`). Wired into `app.js`. Two distinct removal concepts enforced: `cancel` (status+reason → Cancellations) vs `softDelete` (is_deleted → Deleted Jobs); never hard-deletes.
+**Frontend:** `jobs.api` (+ added `patch` to the fetch client); screens `Calendar` (color-coded month grid, prev/next nav, status legend/counts, click a job → detail), `JobSlot` (full detail + assign / postpone / cancel / soft-delete / comment actions), `DeletedJobs`, `JobCancellations`. Routes + nav links + calendar/badge CSS added.
+**Verified end-to-end:** calendar month query, technicians list, assign→Kamal, postpone (2027-01-18→01-23, status postponed), cancel (reason), soft-delete (is_deleted=1); Cancellations view=1, Deleted view=1. Client build OK.
+
+### Next steps (Phase 4)
+Technician mobile module — AS- job search, start/complete, photo upload (min 4/max 5), Normal/H-P type tagging, completion into the approval queue — see [plans/phase-04-technician-mobile/plan.md](plans/phase-04-technician-mobile/plan.md).

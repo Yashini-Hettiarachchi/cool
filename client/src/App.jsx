@@ -8,6 +8,10 @@ import AddPrice from './pages/admin/AddPrice';
 import CustomerSearch from './pages/admin/CustomerSearch';
 import CustomerProfile from './pages/admin/CustomerProfile';
 import NewAgreement from './pages/admin/NewAgreement';
+import Calendar from './pages/admin/Calendar';
+import JobSlot from './pages/admin/JobSlot';
+import DeletedJobs from './pages/admin/DeletedJobs';
+import JobCancellations from './pages/admin/JobCancellations';
 import TechHome from './pages/technician/TechHome';
 
 function Nav() {
@@ -25,6 +29,9 @@ function Nav() {
         {!isTech && <Link to="/dashboard">Dashboard</Link>}
         {!isTech && <Link to="/customers">Customers</Link>}
         {!isTech && <Link to="/agreements/new">New Agreement</Link>}
+        {!isTech && <Link to="/calendar">Calendar</Link>}
+        {!isTech && <Link to="/cancellations">Cancellations</Link>}
+        {!isTech && <Link to="/deleted-jobs">Deleted</Link>}
         {isAdmin && <Link to="/users">Users</Link>}
         {isAdmin && <Link to="/pricing">Pricing</Link>}
         {isTech && <Link to="/technician">My Jobs</Link>}
@@ -56,6 +63,18 @@ export default function App() {
           } />
           <Route path="/agreements/new" element={
             <ProtectedRoute roles={['admin', 'system_user']}><NewAgreement /></ProtectedRoute>
+          } />
+          <Route path="/calendar" element={
+            <ProtectedRoute roles={['admin', 'system_user']}><Calendar /></ProtectedRoute>
+          } />
+          <Route path="/jobs/:id" element={
+            <ProtectedRoute roles={['admin', 'system_user']}><JobSlot /></ProtectedRoute>
+          } />
+          <Route path="/cancellations" element={
+            <ProtectedRoute roles={['admin', 'system_user']}><JobCancellations /></ProtectedRoute>
+          } />
+          <Route path="/deleted-jobs" element={
+            <ProtectedRoute roles={['admin', 'system_user']}><DeletedJobs /></ProtectedRoute>
           } />
           <Route path="/users" element={
             <ProtectedRoute roles={['admin']}><AddUsers /></ProtectedRoute>

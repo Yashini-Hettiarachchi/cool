@@ -22,6 +22,7 @@ const usersRoutes = require('./routes/users.routes');
 const pricingRoutes = require('./routes/pricing.routes');
 const customersRoutes = require('./routes/customers.routes');
 const agreementsRoutes = require('./routes/agreements.routes');
+const jobsRoutes = require('./routes/jobs.routes');
 
 const app = express();
 
@@ -51,6 +52,7 @@ app.use('/api/users', usersRoutes);
 app.use('/api/pricing', pricingRoutes);
 app.use('/api/customers', customersRoutes);
 app.use('/api/agreements', agreementsRoutes);
+app.use('/api/jobs', jobsRoutes);
 
 // --- Static React build (production) ---
 // Vite builds to client/dist; served under /admin.
