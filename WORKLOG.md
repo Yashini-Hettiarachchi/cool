@@ -38,6 +38,7 @@ Read the full design documentation set, set up the phased build-tracking structu
 
 ### Not yet verified (needs a running MySQL)
 - Actual login with seeded admin, user creation, pricing upsert, and 403 for non-admin roles. All code paths are in place; run `npm run db:init && npm run seed:admin` against a MySQL instance to close this out.
+- **DB without local install:** machine has **Docker 27.4.0** (no local MySQL needed). Recommended dev path — `docker run --name ac-mysql -e MYSQL_ROOT_PASSWORD=admin123 -e MYSQL_DATABASE=ac_service_system -p 3306:3306 -d mysql:8`, then set `.env` (root/admin123) and run the init+seed. Alternatives: free cloud MySQL (Railway/Aiven/PlanetScale) or cPanel Remote MySQL later. Full detail in [plans/phase-01-setup-db-auth/issues.md](plans/phase-01-setup-db-auth/issues.md#getting-a-database-without-installing-mysql-locally).
 
 ### Environment notes / decisions
 - **No local MySQL** (`mysql` CLI absent) — use `npm run db:init` (Node-based) against cPanel/local/Docker MySQL. Server boots without a DB; DB-backed calls fail until connected.

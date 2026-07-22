@@ -16,3 +16,18 @@
 ## Notes / observations
 - MySQL CLI absent locally (confirmed via `mysql --version`). Backend code is DB-agnostic at boot — it only connects when a query runs — so the server can start and serve the frontend even before a DB is provisioned. Login will fail gracefully until the DB is reachable and seeded.
 - Node v24 + npm 11 confirmed available on the dev machine. cPanel Node version should be pinned as close as possible during Phase 9.
+
+## Getting a database WITHOUT installing MySQL locally
+Confirmed on this machine: **Docker 27.4.0 installed**, WSL2 (Ubuntu 24.04) present, no local MySQL. You do **not** need a traditional MySQL install. Options, easiest first:
+
+1. **Docker (recommended, already available)** — disposable MySQL 8 container, matches production version:
+   ```bash
+   docker run --name ac-mysql -e MYSQL_ROOT_PASSWORD=admin123 \
+     -e MYSQL_DATABASE=ac_service_system -p 3306:3306 -d mysql:8
+   ```
+   Then in `server/.env`: `DB_USER=root`, `DB_PASS=admin123`, `DB_NAME=ac_service_system`, `DB_HOST=localhost`.
+   Run `npm run db:init && npm run seed:admin && npm run dev`. Stop/remove with `docker stop ac-mysql && docker rm ac-mysql`.
+2. **Free cloud MySQL** (Railway / Aiven / PlanetScale) — no local footprint; paste host/user/pass into `.env`. Reachable from anywhere.
+3. **cPanel MySQL via Remote MySQL** (Phase 9+) — once hosting exists, whitelist your IP and point `.env` at it so dev + prod share one DB. Not worth setting up before the account is provisioned.
+
+**Chosen for dev:** Option 1 (Docker). Traditional local install is explicitly NOT required.
