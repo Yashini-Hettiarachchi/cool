@@ -4,6 +4,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import { jobsApi } from '../../api/jobs.api';
 import { motionTokens } from '../../lib/motion';
 
+const Chevron = ({ dir }) => (
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d={dir === 'left' ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6'} />
+  </svg>
+);
+
 const STATUS_CLASS = {
   scheduled: 'st-scheduled', in_progress: 'st-inprogress', postponed: 'st-postponed',
   completed: 'st-completed', cancelled: 'st-cancelled',
@@ -71,9 +77,9 @@ export default function Calendar() {
             <span className="cal-total">{jobs.length} visit{jobs.length === 1 ? '' : 's'}</span>
           </div>
           <div className="cal-nav">
-            <button className="secondary cal-btn" onClick={() => move(-1)} aria-label="Previous month">‹</button>
+            <button className="secondary cal-btn" onClick={() => move(-1)} aria-label="Previous month"><Chevron dir="left" /></button>
             <button className="secondary" onClick={goToday} disabled={isThisMonth}>Today</button>
-            <button className="secondary cal-btn" onClick={() => move(1)} aria-label="Next month">›</button>
+            <button className="secondary cal-btn" onClick={() => move(1)} aria-label="Next month"><Chevron dir="right" /></button>
           </div>
         </div>
 

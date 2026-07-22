@@ -114,5 +114,31 @@ Adapted two reference calendar layouts (side-panel pattern) to our light/brand t
 - **Calendar:** now a **two-column layout** — month grid + a **side panel** (Today card with big date + today's visit count, Upcoming list, Status legend with live counts). Whole area still locked to the viewport (`.cal-layout` height calc; grid rows `1fr`); collapses to single column under 960px.
 - Verified: stats endpoint returns live counts; build OK; served under /admin.
 
+### Job Detail redesign (interactive, readable blocks + tidy actions)
+Client feedback: the Job Detail blocks weren't visually distinct and the action buttons were an undifferentiated stack. Rebuilt [JobSlot.jsx](client/src/pages/admin/JobSlot.jsx):
+- **Info tiles** — each field (Customer, Phone, Route, Address, AC, Scheduled, Technician, Photos, Postponed-from) is now its own bordered tile with a tinted icon, uppercase label + bold value; unassigned technician renders dimmed/italic. Staggered fade-in on mount + subtle hover lift. Reads as separate, scannable blocks instead of a bare grid.
+- **Grouped actions** — Assign / Postpone / Comment / Cancel are each a titled card (icon + title + one-line description) in a 2-col grid; Cancel uses a warm "warn" tone. Buttons show inline busy states ("Assigning…", "Postponing…", etc.) and disable while a request is in flight.
+- **Danger zone** — soft-delete moved into a clearly separated tinted panel with an explanation, away from the routine actions.
+- **Motion/a11y** — `motion/react` stagger + tap feedback, `AnimatePresence` on the notice/error alert; respects `prefers-reduced-motion` via the global media rule. New CSS in `styles.css` (`.info-grid/.info-tile`, `.action-groups/.action-group`, `.danger-zone`); responsive collapse to 2-col then 1-col. `.detail-grid`/`.action-row` kept (still used by CustomerProfile). Build OK (460 modules).
+
+### Site-wide page redesign (ui-ux-pro-max pass)
+Applied the Job Detail treatment across the whole admin surface for one consistent, interactive language. Added reusable primitives in [components/ui.jsx](client/src/components/ui.jsx): `PageHeader` (icon + title + subtitle + actions), `EmptyState` (icon + message + optional CTA), `Avatar` (deterministic initials tint), `Pill`/soft status badges, a single Lucide-style icon set, and row-stagger motion variants. New CSS in `styles.css` (`.page-head`, `.empty-state`, `.avatar`, `.pill`, `.badge-soft`, `.price-card`, `.search-input`, responsive rules).
+- **CustomerProfile** — replaced the bare `.detail-grid` (same "blocks not separable" issue) with the info-tile pattern; avatar + loyalty chip hero, soft status badges on agreements, AS- mono chips, per-section empty states, motion.
+- **CustomerSearch** — icon page header, search field with inline icon, initial "find a customer" state, no-match empty state with CTA, avatar rows, clickable rows, staggered entrance.
+- **AddUsers** — page header, avatar name cells, role + status **pills** (replacing plain text), busy state on submit, empty state, row stagger.
+- **AddPrice** — plain inputs → two **price cards** (icon, current value, Rs-prefixed input, dirty-aware Save/Saved), animated alerts.
+- **DeletedJobs / JobCancellations** — icon page headers, soft status badges, AS- chips, proper empty states, motion.
+- **TechHome** — Phase-4 placeholder made intentional: hero + "coming in Phase 4" info tiles.
+All motion is transform/opacity only and respects `prefers-reduced-motion`. Build OK (461 modules). Dashboard/Calendar/Login/JobSlot/NewAgreement already carried the language from earlier passes.
+
+### New Agreement forms + Dashboard restack + fixes
+- **New Agreement** — rebuilt as a guided 3-step form: intro card with a numbered **stepper** (Customer → AC Unit → Service Plan), icon-prefixed fields (`IconField`), and −/+ **number steppers** for visit counts. Period is a segmented control with `days` + friendly label (Monthly/Bi-monthly/Quarterly/4-monthly). Non-emoji calendar note summarises what will be scheduled; submit disabled until at least one visit is added. `required` now flows through `IconField` to the input (native validation + asterisk).
+- **Dashboard** — stat tiles are now clickable (navigate to their section, hover lift, `→` affordance); the scattered side-by-side lower section was restacked into titled blocks — "Quick actions" grid then a full-width **Upcoming Visits** card with defined, separable row chips.
+- **Calendar** — month prev/next arrows replaced with proper `Chevron` SVG buttons; side "Upcoming" items given borders/spacing so they read as separate rows.
+- **Users** — fixed the Deactivate button rendering as a solid red block with invisible text (CSS specificity: `button.link.danger` now forces transparent background).
+- **Block separation (site-wide)** — strengthened `.card` border + shadow and converted transparent-at-rest list rows into bordered chips, addressing the recurring "everything blended together" feedback.
+- **Crash fix** — New Agreement went blank because `icon="customer"` had no entry in the shared `ICONS` set, so `Svg` ran `undefined.split('M')`. Added the `customer` icon and hardened `Svg` with `(d || '')` so a missing/typo'd key can never crash a page again.
+- Cleaned a duplicate `required` JSX attribute warning. Build OK (461 modules, no warnings).
+
 ### Next steps (Phase 4)
 Technician mobile module — AS- job search, start/complete, photo upload (min 4/max 5), Normal/H-P type tagging, completion into the approval queue — see [plans/phase-04-technician-mobile/plan.md](plans/phase-04-technician-mobile/plan.md).

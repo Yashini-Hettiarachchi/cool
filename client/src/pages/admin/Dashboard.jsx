@@ -6,11 +6,11 @@ import { jobsApi } from '../../api/jobs.api';
 import { listContainer, listItem, tap } from '../../lib/motion';
 
 const STAT_DEFS = [
-  { key: 'customers', label: 'Customers', tone: 'brand', icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8' },
-  { key: 'activeAgreements', label: 'Active Agreements', tone: 'blue', icon: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8' },
-  { key: 'upcoming', label: 'Upcoming Visits', tone: 'amber', icon: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z' },
-  { key: 'pendingApprovals', label: 'Pending Approvals', tone: 'pink', icon: 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11' },
-  { key: 'completedThisMonth', label: 'Completed (Month)', tone: 'green', icon: 'M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3' },
+  { key: 'customers', label: 'Customers', tone: 'brand', to: '/customers', icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8' },
+  { key: 'activeAgreements', label: 'Active Agreements', tone: 'blue', to: '/customers', icon: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8' },
+  { key: 'upcoming', label: 'Upcoming Visits', tone: 'amber', to: '/calendar', icon: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z' },
+  { key: 'pendingApprovals', label: 'Pending Approvals', tone: 'pink', to: '/calendar', icon: 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11' },
+  { key: 'completedThisMonth', label: 'Completed (Month)', tone: 'green', to: '/calendar', icon: 'M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3' },
 ];
 
 const ACTIONS = [
@@ -54,15 +54,18 @@ export default function Dashboard() {
 
       <motion.div className="stats-grid" variants={listContainer} initial="hidden" animate="visible">
         {STAT_DEFS.map((s) => (
-          <motion.div key={s.key} className="stat-tile" variants={listItem}>
+          <motion.button key={s.key} type="button" className="stat-tile" variants={listItem}
+            whileHover={{ y: -3 }} whileTap={{ scale: 0.98 }} onClick={() => navigate(s.to)}>
             <span className={`stat-icon tone-${s.tone}`}><Svg d={s.icon} size={18} /></span>
             <div className="stat-num">{stats ? stats[s.key] : '—'}</div>
             <div className="stat-label">{s.label}</div>
-          </motion.div>
+            <span className="stat-go" aria-hidden="true">→</span>
+          </motion.button>
         ))}
       </motion.div>
 
-      <div className="dash-grid">
+      <div className="dash-section">
+        <h2 className="section-h">Quick actions</h2>
         <motion.div className="dash-actions" variants={listContainer} initial="hidden" animate="visible">
           {ACTIONS.map((a) => (
             <motion.button key={a.to} className="quick-card" variants={listItem} {...tap} onClick={() => navigate(a.to)}>
@@ -72,28 +75,28 @@ export default function Dashboard() {
             </motion.button>
           ))}
         </motion.div>
+      </div>
 
-        <div className="card upcoming-card">
-          <div className="row-between">
-            <h2 style={{ margin: 0 }}>Upcoming Visits</h2>
-            <button className="link" onClick={() => navigate('/calendar')}>Calendar →</button>
-          </div>
-          <div className="upcoming-list">
-            {upcoming.map((j) => (
-              <button key={j.id} className="up-item" onClick={() => navigate(`/jobs/${j.id}`)}>
-                <span className="up-date">
-                  <b>{new Date(j.scheduled_date + 'T00:00:00').getDate()}</b>
-                  <i>{new Date(j.scheduled_date + 'T00:00:00').toLocaleDateString('en', { month: 'short' })}</i>
-                </span>
-                <span className="up-body">
-                  <span className="up-name">{j.customer_name}</span>
-                  <span className="up-meta"><span className="mono">{j.agreement_no}</span> · {j.route || 'No route'}</span>
-                </span>
-                <span className="up-day">{fmtDate(j.scheduled_date).split(',')[0]}</span>
-              </button>
-            ))}
-            {upcoming.length === 0 && <p className="muted" style={{ padding: '8px 0' }}>No upcoming visits scheduled.</p>}
-          </div>
+      <div className="card upcoming-card">
+        <div className="row-between">
+          <div className="card-title"><h2>Upcoming Visits</h2><span className="count">{upcoming.length}</span></div>
+          <button className="link" onClick={() => navigate('/calendar')}>Calendar →</button>
+        </div>
+        <div className="upcoming-list">
+          {upcoming.map((j) => (
+            <button key={j.id} className="up-item" onClick={() => navigate(`/jobs/${j.id}`)}>
+              <span className="up-date">
+                <b>{new Date(j.scheduled_date + 'T00:00:00').getDate()}</b>
+                <i>{new Date(j.scheduled_date + 'T00:00:00').toLocaleDateString('en', { month: 'short' })}</i>
+              </span>
+              <span className="up-body">
+                <span className="up-name">{j.customer_name}</span>
+                <span className="up-meta"><span className="mono">{j.agreement_no}</span> · {j.route || 'No route'}</span>
+              </span>
+              <span className="up-day">{fmtDate(j.scheduled_date).split(',')[0]}</span>
+            </button>
+          ))}
+          {upcoming.length === 0 && <p className="muted" style={{ padding: '8px 0' }}>No upcoming visits scheduled.</p>}
         </div>
       </div>
     </>

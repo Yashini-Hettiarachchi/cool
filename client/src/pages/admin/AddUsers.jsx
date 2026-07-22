@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'motion/react';
 import { usersApi } from '../../api/users.api';
+import { tap } from '../../lib/motion';
+import { PageHeader, Avatar, Pill, EmptyState, rowContainer, rowItem } from '../../components/ui';
+
+const ROLE_LABEL = { admin: 'Admin', system_user: 'System User', technician: 'Technician' };
+const ROLE_TONE = { admin: 'brand', system_user: 'blue', technician: 'muted' };
 
 const EMPTY = { name: '', username: '', phone: '', role: 'technician', password: '' };
 
@@ -76,8 +82,7 @@ export default function AddUsers() {
 
   return (
     <div className="card">
-      <h1>Users</h1>
-      <p className="muted">Add, update, or deactivate System User and Technician accounts.</p>
+      <PageHeader icon="users" title="Users" subtitle="Add, update, or deactivate System User and Technician accounts." />
 
       <form onSubmit={handleSubmit} className="form-grid">
         <label className="field">
@@ -114,40 +119,46 @@ export default function AddUsers() {
         {notice && <p className="notice">{notice}</p>}
 
         <div className="form-actions">
-          <button type="submit" disabled={busy}>
-            {editingId ? 'Update user' : '+ Add user'}
-          </button>
-          {editingId && <button type="button" className="secondary" onClick={resetForm}>Cancel</button>}
+          <motion.button {...tap} type="submit" disabled={busy}>
+            {busy ? 'Saving…' : editingId ? 'Update user' : '+ Add user'}
+          </motion.button>
+          {editingId && <motion.button {...tap} type="button" className="secondary" onClick={resetForm}>Cancel</motion.button>}
         </div>
       </form>
 
-      <table className="table">
-        <thead>
-          <tr><th>Name</th><th>Username</th><th>Phone</th><th>Role</th><th>Status</th><th></th></tr>
-        </thead>
-        <tbody>
-          {users.map((u) => (
-            <tr key={u.id} className={u.active ? '' : 'row-inactive'}>
-              <td>{u.name}</td>
-              <td>{u.username}</td>
-              <td>{u.phone}</td>
-              <td>{u.role}</td>
-              <td>{u.active ? 'Active' : 'Inactive'}</td>
-              <td className="row-actions">
-                {u.role !== 'admin' && (
-                  <>
-                    <button className="link" onClick={() => startEdit(u)}>Edit</button>
-                    {u.active && <button className="link danger" onClick={() => handleDeactivate(u.id)}>Deactivate</button>}
-                  </>
-                )}
-              </td>
-            </tr>
-          ))}
-          {users.length === 0 && (
-            <tr><td colSpan="6" className="muted">No users yet.</td></tr>
-          )}
-        </tbody>
-      </table>
+      {users.length === 0 ? (
+        <EmptyState icon="users" title="No users yet" hint="Add your first System User or Technician using the form above." />
+      ) : (
+        <table className="table">
+          <thead>
+            <tr><th>Name</th><th>Username</th><th>Phone</th><th>Role</th><th>Status</th><th></th></tr>
+          </thead>
+          <motion.tbody variants={rowContainer} initial="hidden" animate="visible">
+            {users.map((u) => (
+              <motion.tr key={u.id} variants={rowItem} className={u.active ? '' : 'row-inactive'}>
+                <td>
+                  <span className="name-cell">
+                    <Avatar name={u.name} size={34} />
+                    <span className="nc-main">{u.name}</span>
+                  </span>
+                </td>
+                <td className="mono">{u.username}</td>
+                <td>{u.phone || '—'}</td>
+                <td><Pill tone={ROLE_TONE[u.role]}>{ROLE_LABEL[u.role] || u.role}</Pill></td>
+                <td><Pill tone={u.active ? 'green' : 'muted'}>{u.active ? 'Active' : 'Inactive'}</Pill></td>
+                <td className="row-actions">
+                  {u.role !== 'admin' && (
+                    <>
+                      <button className="link" onClick={() => startEdit(u)}>Edit</button>
+                      {u.active && <button className="link danger" onClick={() => handleDeactivate(u.id)}>Deactivate</button>}
+                    </>
+                  )}
+                </td>
+              </motion.tr>
+            ))}
+          </motion.tbody>
+        </table>
+      )}
     </div>
   );
 }
