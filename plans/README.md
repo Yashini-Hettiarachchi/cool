@@ -11,7 +11,7 @@ The source of truth for *what* to build lives in [`../design-plans/`](../design-
 
 | Phase | Folder | Focus | Status |
 |---|---|---|---|
-| 1 | [phase-01-setup-db-auth](phase-01-setup-db-auth/) | Project setup, DB schema, authentication, users & pricing | 🟡 In progress |
+| 1 | [phase-01-setup-db-auth](phase-01-setup-db-auth/) | Project setup, DB schema, authentication, users & pricing | ✅ Complete (pending DB-backed verification) |
 | 2 | [phase-02-customer-agreement](phase-02-customer-agreement/) | Customer & agreement registration, AS- numbering, scheduler | ⚪ Not started |
 | 3 | [phase-03-calendar-scheduling](phase-03-calendar-scheduling/) | Calendar, assignment, postpone/cancel/soft-delete | ⚪ Not started |
 | 4 | [phase-04-technician-mobile](phase-04-technician-mobile/) | Technician mobile module, photo upload, type tagging | ⚪ Not started |
