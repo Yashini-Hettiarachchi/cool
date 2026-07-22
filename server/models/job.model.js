@@ -113,6 +113,40 @@ const JobModel = {
     );
     return rows;
   },
+
+  /** Dashboard overview counts. */
+  async overview() {
+    const [[c]] = await pool.query('SELECT COUNT(*) n FROM customers');
+    const [[a]] = await pool.query("SELECT COUNT(*) n FROM agreements WHERE status = 'active'");
+    const [[u]] = await pool.query(
+      "SELECT COUNT(*) n FROM jobs WHERE status = 'scheduled' AND is_deleted = FALSE AND scheduled_date >= CURDATE()"
+    );
+    const [[comp]] = await pool.query(
+      "SELECT COUNT(*) n FROM jobs WHERE status = 'completed' AND admin_confirmed = TRUE AND DATE_FORMAT(completed_at, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')"
+    );
+    const [[pend]] = await pool.query(
+      "SELECT COUNT(*) n FROM jobs WHERE status = 'completed' AND admin_confirmed = FALSE AND is_deleted = FALSE"
+    );
+    return {
+      customers: c.n,
+      activeAgreements: a.n,
+      upcoming: u.n,
+      completedThisMonth: comp.n,
+      pendingApprovals: pend.n,
+    };
+  },
+
+  /** Next scheduled visits from today onward. */
+  async upcoming(limit = 6) {
+    const [rows] = await pool.query(
+      `${JOB_JOIN}
+        WHERE j.is_deleted = FALSE AND j.status = 'scheduled' AND j.scheduled_date >= CURDATE()
+        ORDER BY j.scheduled_date, j.id
+        LIMIT ?`,
+      [Number(limit)]
+    );
+    return rows;
+  },
 };
 
 module.exports = JobModel;

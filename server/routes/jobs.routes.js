@@ -9,6 +9,8 @@ router.use(authRequired, requireRole('admin', 'system_user'));
 
 // Static paths BEFORE the /:id param route.
 router.get('/technicians', JobsController.technicians);
+router.get('/stats', JobsController.stats);
+router.get('/upcoming', JobsController.upcoming);
 router.get('/deleted', JobsController.deleted);
 router.get('/cancelled', JobsController.cancelled);
 router.get('/', JobsController.list);

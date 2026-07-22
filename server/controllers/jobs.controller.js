@@ -21,6 +21,18 @@ const JobsController = {
     catch (err) { next(err); }
   },
 
+  /** GET /api/jobs/stats — dashboard overview counts. */
+  async stats(req, res, next) {
+    try { res.json({ stats: await JobModel.overview() }); }
+    catch (err) { next(err); }
+  },
+
+  /** GET /api/jobs/upcoming?limit= — next scheduled visits. */
+  async upcoming(req, res, next) {
+    try { res.json({ jobs: await JobModel.upcoming(req.query.limit || 6) }); }
+    catch (err) { next(err); }
+  },
+
   /** GET /api/jobs/deleted */
   async deleted(req, res, next) {
     try { res.json({ jobs: await JobModel.listDeleted() }); }

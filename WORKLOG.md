@@ -93,5 +93,26 @@ Client clarified login must use **username + password**, not phone. Applied end-
 **Frontend:** `jobs.api` (+ added `patch` to the fetch client); screens `Calendar` (color-coded month grid, prev/next nav, status legend/counts, click a job → detail), `JobSlot` (full detail + assign / postpone / cancel / soft-delete / comment actions), `DeletedJobs`, `JobCancellations`. Routes + nav links + calendar/badge CSS added.
 **Verified end-to-end:** calendar month query, technicians list, assign→Kamal, postpone (2027-01-18→01-23, status postponed), cancel (reason), soft-delete (is_deleted=1); Cancellations view=1, Deleted view=1. Client build OK.
 
+### Frontend redesign — "Cool Ops" (sidebar + motion + brand)
+Client-requested UI overhaul. Brand color **`#EA2046`** (crimson). Replaced the top navbar with a **dark rail sidebar**.
+- **Design system:** rewrote `styles.css` (tokens, 21st/shadcn-idiom components — soft shadows, rounded surfaces, focus rings); fonts `Space Grotesk` (display) + `Inter` (UI) + `JetBrains Mono` (AS- IDs) via Google Fonts in `index.html`.
+- **Shell:** `components/Sidebar.jsx` (role-aware grouped nav — Operations/Scheduling/Administration for office, minimal rail for technicians; inline SVG icons; red active indicator bar; user footer + sign-out) and `components/Layout.jsx` (sticky topbar with page title derived from route + mobile hamburger + drawer scrim).
+- **Motion:** installed `motion` (v12); `lib/motion.js` tokens/variants; route cross-fades (`AnimatePresence`), staggered dashboard cards, button hover/tap, animated mobile drawer; `prefers-reduced-motion` respected.
+- **Screens:** redesigned `Login` (split hero + form) and `Dashboard` (welcome hero + animated quick-action cards). All other pages inherit the new look via the global stylesheet.
+- **App.jsx** restructured: unauthenticated → Login; authenticated → `<Layout>` + `<AnimatedRoutes>`.
+- Build OK (460 modules); server serves new build under `/admin`.
+- **Note:** 21st.dev Magic MCP was installed mid-session but its tools don't load until Claude Code restarts (and it needs an API key) — redesign done by hand in the 21st idiom; can pull live 21st components once the MCP is active.
+
+### Redesign polish (calendar fit + global interactivity)
+- **Calendar** now fits the viewport exactly (fixed-height flex card, `grid-auto-rows:1fr` so rows divide leftover height — no page scroll on 5- or 6-row months). Added today ring, "Today" jump, weekend/out-of-month hatching, per-day count, tinted status job-chips, count-pill legend, floating empty-state overlay, month-change + hover motion.
+- **Global button system** (primary/secondary/ghost/danger) with hover lift + branded glow, press states, and keyboard `:focus-visible` rings on all interactive elements. Ghost/link actions (View/Edit/Deactivate) are now tinted pills that clearly read as clickable. Inputs: hover border, disabled = dashed/muted, refined scrollbars. All in `client/src/styles.css` — applies app-wide.
+
+### Dashboard + Calendar upgrade (ref-inspired layouts)
+Adapted two reference calendar layouts (side-panel pattern) to our light/brand theme.
+- **Backend:** `JobModel.overview()` (dashboard counts: customers, active agreements, upcoming, completed-this-month, pending approvals) + `JobModel.upcoming(limit)`; exposed as `GET /api/jobs/stats` and `GET /api/jobs/upcoming` (guarded office roles; static routes ordered before `/:id`).
+- **Dashboard:** live **stat-tile row** (5 tiles, tinted icons), 2×2 **quick actions** (fixed the button `white-space:nowrap` that was truncating card text), and an **Upcoming Visits** list (date chip + customer + AS- + route). Motion stagger.
+- **Calendar:** now a **two-column layout** — month grid + a **side panel** (Today card with big date + today's visit count, Upcoming list, Status legend with live counts). Whole area still locked to the viewport (`.cal-layout` height calc; grid rows `1fr`); collapses to single column under 960px.
+- Verified: stats endpoint returns live counts; build OK; served under /admin.
+
 ### Next steps (Phase 4)
 Technician mobile module — AS- job search, start/complete, photo upload (min 4/max 5), Normal/H-P type tagging, completion into the approval queue — see [plans/phase-04-technician-mobile/plan.md](plans/phase-04-technician-mobile/plan.md).
