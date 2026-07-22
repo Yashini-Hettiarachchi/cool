@@ -160,5 +160,7 @@ A technician can now log in on a phone, see today's assigned jobs, search any jo
 
 **Verified end-to-end** (live Docker DB, test server on :3100): admin created a technician + assigned a job → technician login → today list, AS- search, detail, start (`in_progress`), upload 2 photos (201), authenticated photo retrieval (200 image/png), unauthenticated blocked (401), max-5 cap (422 + file rollback verified: exactly 2 files on disk), ownership 403 on an unassigned job, completion blocked without service type (422) then succeeded → `pendingApprovals=1`. Client build OK (465 modules).
 
+**Deployed to the running dev server:** the stale :3000 node process (pre–Phase 4 code) was killed and the server restarted via `npm run dev` (nodemon, auto-reload) so `/admin` now serves the Phase 4 build. Test login for the technician surface: **`testtech` / `tech123`**. Note this run left sample data in the dev DB (technician `testtech`; AS-00001 visit #1 completed with 2 photos, awaiting approval) — delete it for a clean slate.
+
 ### Next steps (Phase 5)
 Job completion approval workflow (admin confirms queued completions → finalize + loyalty/SMS) and renewals — see [plans/](plans/).
