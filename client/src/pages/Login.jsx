@@ -5,7 +5,7 @@ import { useAuth } from '../auth/AuthContext';
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [phone, setPhone] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -15,7 +15,7 @@ export default function Login() {
     setError('');
     setBusy(true);
     try {
-      const user = await login(phone.trim(), password);
+      const user = await login(username.trim(), password);
       // Route by role.
       navigate(user.role === 'technician' ? '/technician' : '/dashboard', { replace: true });
     } catch (err) {
@@ -31,11 +31,11 @@ export default function Login() {
       <p className="muted">Highcool AC Service Management</p>
       <form onSubmit={handleSubmit}>
         <label>
-          Phone
+          Username
           <input
             type="text"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             autoComplete="username"
             required
           />

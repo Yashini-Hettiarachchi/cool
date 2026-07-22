@@ -20,6 +20,8 @@ const { ping } = require('./config/db');
 const authRoutes = require('./routes/auth.routes');
 const usersRoutes = require('./routes/users.routes');
 const pricingRoutes = require('./routes/pricing.routes');
+const customersRoutes = require('./routes/customers.routes');
+const agreementsRoutes = require('./routes/agreements.routes');
 
 const app = express();
 
@@ -47,6 +49,8 @@ app.get('/api/health', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/pricing', pricingRoutes);
+app.use('/api/customers', customersRoutes);
+app.use('/api/agreements', agreementsRoutes);
 
 // --- Static React build (production) ---
 // Vite builds to client/dist; served under /admin.

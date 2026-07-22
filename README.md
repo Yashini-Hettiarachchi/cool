@@ -42,7 +42,8 @@ npm run dev                   # http://localhost:5173/admin (proxies /api to :30
 For a production-style run, `npm run build` in `client/`, then the Express server serves `client/dist` at `http://localhost:3000/admin`.
 
 ## Default login (after seeding)
-- **Phone:** value of `SEED_ADMIN_PHONE` (default `0770000000`)
+Login is by **username + password** (per client requirement; phone is contact info only).
+- **Username:** value of `SEED_ADMIN_USERNAME` (default `admin`)
 - **Password:** value of `SEED_ADMIN_PASSWORD` (default `admin123`) — change after first login.
 
 ## Status

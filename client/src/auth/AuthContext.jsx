@@ -9,8 +9,8 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
 
-  const login = useCallback(async (phone, password) => {
-    const { token: t, user: u } = await authApi.login(phone, password);
+  const login = useCallback(async (username, password) => {
+    const { token: t, user: u } = await authApi.login(username, password);
     setAuthToken(t);
     setToken(t);
     setUser(u);

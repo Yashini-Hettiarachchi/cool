@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { usersApi } from '../../api/users.api';
 
-const EMPTY = { name: '', phone: '', role: 'technician', password: '' };
+const EMPTY = { name: '', username: '', phone: '', role: 'technician', password: '' };
 
 export default function AddUsers() {
   const [users, setUsers] = useState([]);
@@ -28,7 +28,7 @@ export default function AddUsers() {
 
   function startEdit(u) {
     setEditingId(u.id);
-    setForm({ name: u.name, phone: u.phone || '', role: u.role, password: '' });
+    setForm({ name: u.name, username: u.username || '', phone: u.phone || '', role: u.role, password: '' });
     setNotice('');
     setError('');
   }
@@ -45,7 +45,7 @@ export default function AddUsers() {
     setBusy(true);
     try {
       if (editingId) {
-        const payload = { name: form.name, phone: form.phone, role: form.role };
+        const payload = { name: form.name, username: form.username, phone: form.phone, role: form.role };
         if (form.password) payload.password = form.password;
         await usersApi.update(editingId, payload);
         setNotice('User updated.');
@@ -85,8 +85,12 @@ export default function AddUsers() {
           <input value={form.name} onChange={(e) => set('name', e.target.value)} required />
         </label>
         <label>
+          Username
+          <input value={form.username} onChange={(e) => set('username', e.target.value)} autoComplete="off" required />
+        </label>
+        <label>
           Phone
-          <input value={form.phone} onChange={(e) => set('phone', e.target.value)} required />
+          <input value={form.phone} onChange={(e) => set('phone', e.target.value)} />
         </label>
         <label>
           Role
@@ -118,12 +122,13 @@ export default function AddUsers() {
 
       <table className="table">
         <thead>
-          <tr><th>Name</th><th>Phone</th><th>Role</th><th>Status</th><th></th></tr>
+          <tr><th>Name</th><th>Username</th><th>Phone</th><th>Role</th><th>Status</th><th></th></tr>
         </thead>
         <tbody>
           {users.map((u) => (
             <tr key={u.id} className={u.active ? '' : 'row-inactive'}>
               <td>{u.name}</td>
+              <td>{u.username}</td>
               <td>{u.phone}</td>
               <td>{u.role}</td>
               <td>{u.active ? 'Active' : 'Inactive'}</td>
@@ -138,7 +143,7 @@ export default function AddUsers() {
             </tr>
           ))}
           {users.length === 0 && (
-            <tr><td colSpan="5" className="muted">No users yet.</td></tr>
+            <tr><td colSpan="6" className="muted">No users yet.</td></tr>
           )}
         </tbody>
       </table>

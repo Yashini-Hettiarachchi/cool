@@ -12,13 +12,13 @@ const AuthController = {
    */
   async login(req, res, next) {
     try {
-      const { phone, password } = req.body || {};
-      if (!phone || !password) {
-        return res.status(400).json({ error: 'Phone and password are required' });
+      const { username, password } = req.body || {};
+      if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required' });
       }
 
-      const user = await UserModel.findByPhone(phone);
-      // Generic message — do not reveal whether the phone exists.
+      const user = await UserModel.findByUsername(username);
+      // Generic message — do not reveal whether the username exists.
       if (!user) {
         return res.status(401).json({ error: 'Invalid credentials' });
       }
@@ -39,7 +39,7 @@ const AuthController = {
 
       res.json({
         token,
-        user: { id: user.id, name: user.name, phone: user.phone, role: user.role },
+        user: { id: user.id, name: user.name, username: user.username, phone: user.phone, role: user.role },
       });
     } catch (err) {
       next(err);

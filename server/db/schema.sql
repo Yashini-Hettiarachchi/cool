@@ -15,11 +15,13 @@ USE ac_service_system;
 CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(150) NOT NULL,
-  phone VARCHAR(20),
+  username VARCHAR(100) NOT NULL UNIQUE,   -- login identifier
+  phone VARCHAR(20),                       -- contact only
   role ENUM('admin','system_user','technician') NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   active BOOLEAN DEFAULT TRUE,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_username (username)
 );
 
 -- CUSTOMERS

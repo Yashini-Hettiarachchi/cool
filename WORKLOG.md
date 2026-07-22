@@ -36,9 +36,28 @@ Read the full design documentation set, set up the phased build-tracking structu
 - `npm run build` (client) succeeds → `client/dist`.
 - Express serves `/admin/` (HTML), `/` → 302 `/admin`, `/admin/dashboard` deep link → 200 (SPA fallback).
 
-### Not yet verified (needs a running MySQL)
-- Actual login with seeded admin, user creation, pricing upsert, and 403 for non-admin roles. All code paths are in place; run `npm run db:init && npm run seed:admin` against a MySQL instance to close this out.
-- **DB without local install:** machine has **Docker 27.4.0** (no local MySQL needed). Recommended dev path — `docker run --name ac-mysql -e MYSQL_ROOT_PASSWORD=admin123 -e MYSQL_DATABASE=ac_service_system -p 3306:3306 -d mysql:8`, then set `.env` (root/admin123) and run the init+seed. Alternatives: free cloud MySQL (Railway/Aiven/PlanetScale) or cPanel Remote MySQL later. Full detail in [plans/phase-01-setup-db-auth/issues.md](plans/phase-01-setup-db-auth/issues.md#getting-a-database-without-installing-mysql-locally).
+### DB-backed verification ✅ (completed)
+Stood up a local DB via **Docker Compose** (no local MySQL install — machine has Docker 27.4.0). Created [docker-compose.yml](docker-compose.yml) with project name `ac-service-hub` grouping two services:
+- **`ac-mysql`** (mysql:8, port 3306, persistent named volume `ac-mysql-data`, healthcheck)
+- **`ac-adminer`** (adminer, port 8080 — browser DB viewer at http://localhost:8080)
+
+Ran `npm run db:init` (9 tables created) + `npm run seed:admin` (admin id=1), then exercised the live API:
+- Admin login → JWT issued ✓
+- Create technician (Kamal Perera, id=2) ✓
+- Set pricing: normal=3500, hp=5000 ✓
+- List users returns admin + technician ✓
+- Technician token → `GET /api/users` = **403**, `PUT /api/pricing` = **403** ✓
+
+**Phase 1 checkpoint fully closed.**
+
+**Data viewer:** Adminer at http://localhost:8080 → System: MySQL, Server: `ac-mysql` (or `localhost`), User: `root`, Pass: `admin123`, DB: `ac_service_system`.
+**Stack control:** `docker compose up -d` / `docker compose down` (keeps data) / `docker compose down -v` (wipes DB).
+**Note:** `server/.env` `DB_PASS` set to `admin123` to match the container root password.
+
+### DB options recap (no local install needed)
+1. **Docker Compose (chosen)** — `docker compose up -d` from repo root.
+2. Free cloud MySQL (Railway/Aiven/PlanetScale) — paste creds into `.env`.
+3. cPanel Remote MySQL (Phase 9+). Full detail in [plans/phase-01-setup-db-auth/issues.md](plans/phase-01-setup-db-auth/issues.md#getting-a-database-without-installing-mysql-locally).
 
 ### Environment notes / decisions
 - **No local MySQL** (`mysql` CLI absent) — use `npm run db:init` (Node-based) against cPanel/local/Docker MySQL. Server boots without a DB; DB-backed calls fail until connected.
@@ -48,5 +67,26 @@ Read the full design documentation set, set up the phased build-tracking structu
 - **JWT in React state only** (memory) per design — lost on refresh; accepted for v1.
 - **`pricing.service_type`** given a UNIQUE constraint to support the `ON DUPLICATE KEY UPDATE` upsert.
 
-### Next steps (Phase 2)
-Customer & agreement registration, AS- numbering, job scheduler, activation SMS — see [plans/phase-02-customer-agreement/plan.md](plans/phase-02-customer-agreement/plan.md).
+### Change request — login by username (client requirement)
+Client clarified login must use **username + password**, not phone. Applied end-to-end:
+- Added `username VARCHAR(100) NOT NULL UNIQUE` to `users` (schema.sql + live `ALTER TABLE` migration; backfilled admin→`admin`, technician→`kamal`).
+- Backend: `user.model` (`findByUsername`, create/update handle username), `auth.controller` (login by username), `seed-admin` (seeds username, `SEED_ADMIN_USERNAME=admin`), `users.controller` (username required + uniqueness check). Phone kept as optional contact field.
+- Frontend: `Login` (Username field), `AddUsers` (username input + table column), `auth.api`/`AuthContext` send `username`.
+- Verified: `admin`/`admin123` → 200; phone-based login → 400. Client rebuilt, server restarted.
+- **New default login: username `admin`, password `admin123`.**
+
+### Phase 2 build ✅ (Customer & Agreement Registration)
+**Backend:**
+- Services: `numberingService` (AS- serial, `FOR UPDATE` lock inside txn), `schedulerService` (generates `normal+hp` jobs spaced `period_days` apart), `smsService` (Text.lk wrapper + templates, **log-only** until `SMS_ENABLED=true`; never throws into the create flow).
+- Models: `customer` (search by NIC/phone/name/AS-, full profile with AC units + agreements + loyalty years), `acUnit`, `agreement` (create, `findByNumber`, jobs).
+- Controllers/routes: `customers` (`GET /search`, `GET /:id`, `POST /`), `agreements` (`GET /:number`, `POST /`). Both guarded `admin`+`system_user`.
+- **`POST /api/agreements`** does it all in ONE transaction: reuse/create customer → create AC → generate AS- → insert agreement (1-yr) → auto-generate jobs → log activation SMS after commit. Wired into `app.js`.
+
+**Frontend:** `customers.api` + `agreements.api`; screens `CustomerSearch`, `CustomerProfile` (agreements + AC units + "New agreement for this customer"), `NewAgreement` (customer/AC/agreement form, period presets 30/60/90/120, pricing prefill hints, success view listing generated visits). Routes + nav links added.
+
+**Verified end-to-end:** created **AS-00001** for a new customer (2 Normal + 2 H/P, 90-day period) → **4 jobs** auto-scheduled (Oct 20 → Jan 18 → Apr 18 → Jul 17), end_date +1yr, activation SMS logged. Search by NIC and by AS- both resolve; profile returns correct counts; AS- lookup returns agreement + 4 jobs. Client build OK.
+
+**Note:** Sinhala `route` showed `??????` in curl tests — a Windows-terminal arg-encoding artifact, not a DB issue (DB + pool are utf8mb4). Confirm with real browser input.
+
+### Next steps (Phase 3)
+Calendar, technician assignment, postpone/cancel/soft-delete, Deleted Jobs & Cancellations views — see [plans/phase-03-calendar-scheduling/plan.md](plans/phase-03-calendar-scheduling/plan.md).

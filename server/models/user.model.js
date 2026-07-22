@@ -5,10 +5,19 @@
 const bcrypt = require('bcryptjs');
 const { pool } = require('../config/db');
 
-const PUBLIC_FIELDS = 'id, name, phone, role, active, created_at';
+const PUBLIC_FIELDS = 'id, name, username, phone, role, active, created_at';
 
 const UserModel = {
-  /** Find a user by phone (includes password_hash — for login only). */
+  /** Find a user by username (includes password_hash — for login only). */
+  async findByUsername(username) {
+    const [rows] = await pool.query(
+      'SELECT * FROM users WHERE username = ? LIMIT 1',
+      [username]
+    );
+    return rows[0] || null;
+  },
+
+  /** Find a user by phone (contact lookup / duplicate check). */
   async findByPhone(phone) {
     const [rows] = await pool.query(
       'SELECT * FROM users WHERE phone = ? LIMIT 1',
@@ -42,11 +51,11 @@ const UserModel = {
   },
 
   /** Create a user with a hashed password. Returns the public record. */
-  async create({ name, phone, role, password }) {
+  async create({ name, username, phone, role, password }) {
     const hash = await bcrypt.hash(password, 10);
     const [result] = await pool.query(
-      'INSERT INTO users (name, phone, role, password_hash, active) VALUES (?, ?, ?, ?, TRUE)',
-      [name, phone, role, hash]
+      'INSERT INTO users (name, username, phone, role, password_hash, active) VALUES (?, ?, ?, ?, ?, TRUE)',
+      [name, username, phone, role, hash]
     );
     return this.findById(result.insertId);
   },
@@ -55,11 +64,12 @@ const UserModel = {
    * Update a user. `password` is optional — only re-hashed if provided.
    * Only whitelisted fields can change.
    */
-  async update(id, { name, phone, role, active, password }) {
+  async update(id, { name, username, phone, role, active, password }) {
     const fields = [];
     const values = [];
 
     if (name !== undefined) { fields.push('name = ?'); values.push(name); }
+    if (username !== undefined) { fields.push('username = ?'); values.push(username); }
     if (phone !== undefined) { fields.push('phone = ?'); values.push(phone); }
     if (role !== undefined) { fields.push('role = ?'); values.push(role); }
     if (active !== undefined) { fields.push('active = ?'); values.push(!!active); }

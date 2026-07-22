@@ -21,21 +21,21 @@ const UsersController = {
   /** POST /api/users — create a system_user or technician. */
   async create(req, res, next) {
     try {
-      const { name, phone, role, password } = req.body || {};
+      const { name, username, phone, role, password } = req.body || {};
 
-      if (!name || !phone || !role || !password) {
-        return res.status(400).json({ error: 'name, phone, role and password are required' });
+      if (!name || !username || !role || !password) {
+        return res.status(400).json({ error: 'name, username, role and password are required' });
       }
       if (!MANAGEABLE_ROLES.includes(role)) {
         return res.status(400).json({ error: `role must be one of: ${MANAGEABLE_ROLES.join(', ')}` });
       }
 
-      const existing = await UserModel.findByPhone(phone);
+      const existing = await UserModel.findByUsername(username);
       if (existing) {
-        return res.status(409).json({ error: 'A user with this phone already exists' });
+        return res.status(409).json({ error: 'A user with this username already exists' });
       }
 
-      const user = await UserModel.create({ name, phone, role, password });
+      const user = await UserModel.create({ name, username, phone, role, password });
       res.status(201).json({ user });
     } catch (err) {
       next(err);
@@ -46,7 +46,7 @@ const UsersController = {
   async update(req, res, next) {
     try {
       const { id } = req.params;
-      const { name, phone, role, active, password } = req.body || {};
+      const { name, username, phone, role, active, password } = req.body || {};
 
       const target = await UserModel.findById(id);
       if (!target) return res.status(404).json({ error: 'User not found' });
@@ -57,7 +57,7 @@ const UsersController = {
         return res.status(400).json({ error: `role must be one of: ${MANAGEABLE_ROLES.join(', ')}` });
       }
 
-      const user = await UserModel.update(id, { name, phone, role, active, password });
+      const user = await UserModel.update(id, { name, username, phone, role, active, password });
       res.json({ user });
     } catch (err) {
       next(err);

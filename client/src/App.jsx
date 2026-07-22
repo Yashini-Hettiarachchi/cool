@@ -5,6 +5,9 @@ import Login from './pages/Login';
 import Dashboard from './pages/admin/Dashboard';
 import AddUsers from './pages/admin/AddUsers';
 import AddPrice from './pages/admin/AddPrice';
+import CustomerSearch from './pages/admin/CustomerSearch';
+import CustomerProfile from './pages/admin/CustomerProfile';
+import NewAgreement from './pages/admin/NewAgreement';
 import TechHome from './pages/technician/TechHome';
 
 function Nav() {
@@ -20,6 +23,8 @@ function Nav() {
       <span className="nav-brand">Highcool Service Hub</span>
       <div className="nav-links">
         {!isTech && <Link to="/dashboard">Dashboard</Link>}
+        {!isTech && <Link to="/customers">Customers</Link>}
+        {!isTech && <Link to="/agreements/new">New Agreement</Link>}
         {isAdmin && <Link to="/users">Users</Link>}
         {isAdmin && <Link to="/pricing">Pricing</Link>}
         {isTech && <Link to="/technician">My Jobs</Link>}
@@ -42,6 +47,15 @@ export default function App() {
 
           <Route path="/dashboard" element={
             <ProtectedRoute roles={['admin', 'system_user']}><Dashboard /></ProtectedRoute>
+          } />
+          <Route path="/customers" element={
+            <ProtectedRoute roles={['admin', 'system_user']}><CustomerSearch /></ProtectedRoute>
+          } />
+          <Route path="/customers/:id" element={
+            <ProtectedRoute roles={['admin', 'system_user']}><CustomerProfile /></ProtectedRoute>
+          } />
+          <Route path="/agreements/new" element={
+            <ProtectedRoute roles={['admin', 'system_user']}><NewAgreement /></ProtectedRoute>
           } />
           <Route path="/users" element={
             <ProtectedRoute roles={['admin']}><AddUsers /></ProtectedRoute>
