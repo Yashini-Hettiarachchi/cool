@@ -1,26 +1,25 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { customersApi } from '../../api/customers.api';
 import { tap } from '../../lib/motion';
-import { PageHeader, EmptyState, Avatar, Svg, ICONS, rowContainer, rowItem } from '../../components/ui';
+import { PageHeader, EmptyState, Avatar, Pill, Svg, ICONS, rowContainer, rowItem } from '../../components/ui';
 
 export default function CustomerSearch() {
   const navigate = useNavigate();
   const [q, setQ] = useState('');
   const [results, setResults] = useState([]);
-  const [searched, setSearched] = useState(false);
+  const [mode, setMode] = useState('all');   // 'all' (default listing) | 'search'
   const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(true);
 
-  async function handleSearch(e) {
-    e.preventDefault();
-    setError('');
-    setBusy(true);
+  // Load every customer by default, before any search.
+  async function loadAll() {
+    setError(''); setBusy(true);
     try {
-      const { customers } = await customersApi.search(q.trim());
+      const { customers } = await customersApi.list();
       setResults(customers);
-      setSearched(true);
+      setMode('all');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -28,9 +27,39 @@ export default function CustomerSearch() {
     }
   }
 
+  useEffect(() => { loadAll(); }, []);
+
+  async function handleSearch(e) {
+    e.preventDefault();
+    const term = q.trim();
+    if (!term) return loadAll();   // empty search → back to full list
+    setError(''); setBusy(true);
+    try {
+      const { customers } = await customersApi.search(term);
+      setResults(customers);
+      setMode('search');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function clearSearch() {
+    setQ('');
+    loadAll();
+  }
+
+  const count = results.length;
+  const subtitle = busy
+    ? 'Loading customers…'
+    : mode === 'all'
+      ? `${count} customer${count === 1 ? '' : 's'} registered · search by NIC, phone, name, or AS-`
+      : `${count} match${count === 1 ? '' : 'es'} for "${q.trim()}"`;
+
   return (
     <div className="card">
-      <PageHeader icon="search" title="Customer Search" subtitle="Search by NIC, phone, name, or AS- number.">
+      <PageHeader icon="customers" title="Customers" subtitle={subtitle}>
         <motion.button {...tap} onClick={() => navigate('/agreements/new')}>
           <Svg d={ICONS.userPlus} size={16} /> New Agreement
         </motion.button>
@@ -42,26 +71,31 @@ export default function CustomerSearch() {
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="e.g. 911234567V, 0712223334, or AS-00001" autoFocus />
         </div>
         <motion.button {...tap} type="submit" disabled={busy}>{busy ? 'Searching…' : 'Search'}</motion.button>
+        {mode === 'search' && (
+          <motion.button {...tap} type="button" className="secondary" onClick={clearSearch}>Show all</motion.button>
+        )}
       </form>
 
       {error && <p className="error">{error}</p>}
 
-      {!searched && !error && (
-        <EmptyState icon="search" title="Find a customer"
-          hint="Type a NIC, phone number, name, or AS- number above and press Search." />
-      )}
-
-      {searched && results.length === 0 && (
-        <EmptyState icon="inbox" title="No matches found"
-          hint={`Nothing matched "${q}". Check the spelling, or register a new agreement.`}>
+      {!busy && count === 0 && mode === 'all' && !error && (
+        <EmptyState icon="customers" title="No customers yet"
+          hint="Register your first customer by creating a new agreement.">
           <motion.button {...tap} className="secondary" onClick={() => navigate('/agreements/new')}>+ New Agreement</motion.button>
         </EmptyState>
       )}
 
-      {searched && results.length > 0 && (
+      {!busy && count === 0 && mode === 'search' && !error && (
+        <EmptyState icon="inbox" title="No matches found"
+          hint={`Nothing matched "${q.trim()}". Check the spelling, or register a new agreement.`}>
+          <motion.button {...tap} className="secondary" onClick={clearSearch}>Show all customers</motion.button>
+        </EmptyState>
+      )}
+
+      {!busy && count > 0 && (
         <table className="table">
           <thead>
-            <tr><th>Name</th><th>Phone</th><th>NIC</th><th>Route</th><th></th></tr>
+            <tr><th>Name</th><th>Phone</th><th>NIC</th><th>Route</th><th>Agreements</th><th></th></tr>
           </thead>
           <motion.tbody variants={rowContainer} initial="hidden" animate="visible">
             {results.map((c) => (
@@ -75,6 +109,11 @@ export default function CustomerSearch() {
                 <td>{c.phone}</td>
                 <td>{c.nic}</td>
                 <td>{c.route || '—'}</td>
+                <td>
+                  {c.agreement_count != null
+                    ? <Pill tone={c.agreement_count > 0 ? 'brand' : 'muted'}>{c.agreement_count}</Pill>
+                    : '—'}
+                </td>
                 <td className="row-actions">
                   <button className="link" onClick={(e) => { e.stopPropagation(); navigate(`/customers/${c.id}`); }}>View →</button>
                 </td>

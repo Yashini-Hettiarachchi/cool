@@ -19,6 +19,19 @@ const CustomerModel = {
     return rows[0] || null;
   },
 
+  /** All customers (most recent first) with a count of their agreements. */
+  async listAll() {
+    const [rows] = await pool.query(
+      `SELECT c.*, COUNT(a.id) AS agreement_count
+         FROM customers c
+         LEFT JOIN agreements a ON a.customer_id = c.id
+        GROUP BY c.id
+        ORDER BY c.created_at DESC
+        LIMIT 500`
+    );
+    return rows;
+  },
+
   /**
    * Universal search by NIC, phone, or AS- number.
    * Returns matching customers (deduped). AS- resolves via the agreement.

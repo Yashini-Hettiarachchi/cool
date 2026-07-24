@@ -8,6 +8,7 @@ const router = express.Router();
 // Office operations — admin and system_user (not technicians).
 router.use(authRequired, requireRole('admin', 'system_user'));
 
+router.get('/', CustomersController.list);
 router.get('/search', CustomersController.search);
 router.get('/:id', CustomersController.profile);
 router.post('/', CustomersController.create);

@@ -6,6 +6,15 @@ const CustomerModel = require('../models/customer.model');
 const { pool } = require('../config/db');
 
 const CustomersController = {
+  /** GET /api/customers — all customers (default listing). */
+  async list(req, res, next) {
+    try {
+      res.json({ customers: await CustomerModel.listAll() });
+    } catch (err) {
+      next(err);
+    }
+  },
+
   /** GET /api/customers/search?q= — by NIC / phone / name / AS-. */
   async search(req, res, next) {
     try {
