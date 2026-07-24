@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { jobsApi } from '../../api/jobs.api';
 import { PageHeader, EmptyState, rowContainer, rowItem } from '../../components/ui';
+import Pagination, { paginate } from '../../components/Pagination';
 
 export default function DeletedJobs() {
   const [jobs, setJobs] = useState([]);
   const [error, setError] = useState('');
   const [loaded, setLoaded] = useState(false);
+  const [page, setPage] = useState(0);
 
   useEffect(() => {
     jobsApi.deleted().then(({ jobs }) => setJobs(jobs)).catch((e) => setError(e.message)).finally(() => setLoaded(true));
@@ -21,11 +23,14 @@ export default function DeletedJobs() {
       {loaded && jobs.length === 0 && !error ? (
         <EmptyState icon="trash" title="No deleted jobs"
           hint="Jobs soft-deleted from the Job Detail screen will appear here for reference." />
-      ) : (
+      ) : (() => {
+        const pg = paginate(jobs, page, 12);
+        return (
+        <>
         <table className="table">
           <thead><tr><th>AS-No</th><th>Customer</th><th>Scheduled</th><th>Status</th><th>Route</th></tr></thead>
           <motion.tbody variants={rowContainer} initial="hidden" animate="visible">
-            {jobs.map((j) => (
+            {pg.slice.map((j) => (
               <motion.tr key={j.id} variants={rowItem}>
                 <td><span className="as-chip">{j.agreement_no}</span></td>
                 <td>{j.customer_name}</td>
@@ -36,7 +41,10 @@ export default function DeletedJobs() {
             ))}
           </motion.tbody>
         </table>
-      )}
+        <Pagination {...pg} onPage={setPage} unit="jobs" />
+        </>
+        );
+      })()}
     </div>
   );
 }

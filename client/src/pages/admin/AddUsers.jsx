@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { usersApi } from '../../api/users.api';
 import { tap } from '../../lib/motion';
 import { PageHeader, Avatar, Pill, EmptyState, rowContainer, rowItem } from '../../components/ui';
+import Pagination, { paginate } from '../../components/Pagination';
 
 const ROLE_LABEL = { admin: 'Admin', system_user: 'System User', technician: 'Technician' };
 const ROLE_TONE = { admin: 'brand', system_user: 'blue', technician: 'muted' };
@@ -16,6 +17,7 @@ export default function AddUsers() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
+  const [page, setPage] = useState(0);
 
   async function load() {
     try {
@@ -128,13 +130,16 @@ export default function AddUsers() {
 
       {users.length === 0 ? (
         <EmptyState icon="users" title="No users yet" hint="Add your first System User or Technician using the form above." />
-      ) : (
+      ) : (() => {
+        const pg = paginate(users, page, 12);
+        return (
+        <>
         <table className="table">
           <thead>
             <tr><th>Name</th><th>Username</th><th>Phone</th><th>Role</th><th>Status</th><th></th></tr>
           </thead>
           <motion.tbody variants={rowContainer} initial="hidden" animate="visible">
-            {users.map((u) => (
+            {pg.slice.map((u) => (
               <motion.tr key={u.id} variants={rowItem} className={u.active ? '' : 'row-inactive'}>
                 <td>
                   <span className="name-cell">
@@ -158,7 +163,10 @@ export default function AddUsers() {
             ))}
           </motion.tbody>
         </table>
-      )}
+        <Pagination {...pg} onPage={setPage} unit="users" />
+        </>
+        );
+      })()}
     </div>
   );
 }

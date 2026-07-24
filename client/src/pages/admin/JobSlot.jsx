@@ -15,11 +15,12 @@ const ICONS = {
   technician: 'M14.7 6.3a4 4 0 0 0-5.6 5.6l-6.4 6.4a2 2 0 0 0 2.8 2.8l6.4-6.4a4 4 0 0 0 5.6-5.6l-2.9 2.9-2.1-2.1z',
   photos: 'M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
   clock: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6v6l4 2',
+  arrow: 'M5 12h14M12 5l7 7-7 7',
 };
 
 const Svg = ({ d, size = 18 }) => (
   <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    {d.split('M').filter(Boolean).map((p, i) => <path key={i} d={`M${p}`} />)}
+    {(d || '').split('M').filter(Boolean).map((p, i) => <path key={i} d={`M${p}`} />)}
   </svg>
 );
 
@@ -67,6 +68,10 @@ export default function JobSlot() {
 
   return (
     <motion.div variants={pageStagger} initial="hidden" animate="visible">
+      <motion.button {...tap} className="back-link" variants={listItem} onClick={() => navigate('/calendar')}>
+        <span className="bl-ico"><Svg d={ICONS.arrow} size={16} /></span> Back to calendar
+      </motion.button>
+
       {/* ---- Summary ---- */}
       <motion.div className="card job-head" variants={listItem}>
         <div className="row-between">
@@ -132,9 +137,6 @@ export default function JobSlot() {
           }}>{busy === 'delete' ? 'Deleting…' : 'Delete'}</motion.button>
         </div>
 
-        <div className="form-actions">
-          <motion.button {...tap} className="secondary" onClick={() => navigate('/calendar')}>← Back to calendar</motion.button>
-        </div>
       </motion.div>
     </motion.div>
   );

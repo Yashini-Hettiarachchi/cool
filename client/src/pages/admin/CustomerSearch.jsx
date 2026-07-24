@@ -4,6 +4,9 @@ import { motion } from 'motion/react';
 import { customersApi } from '../../api/customers.api';
 import { tap } from '../../lib/motion';
 import { PageHeader, EmptyState, Avatar, Pill, Svg, ICONS, rowContainer, rowItem } from '../../components/ui';
+import Pagination, { paginate } from '../../components/Pagination';
+
+const PER_PAGE = 15;
 
 export default function CustomerSearch() {
   const navigate = useNavigate();
@@ -12,6 +15,7 @@ export default function CustomerSearch() {
   const [mode, setMode] = useState('all');   // 'all' (default listing) | 'search'
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(true);
+  const [page, setPage] = useState(0);
 
   // Load every customer by default, before any search.
   async function loadAll() {
@@ -20,6 +24,7 @@ export default function CustomerSearch() {
       const { customers } = await customersApi.list();
       setResults(customers);
       setMode('all');
+      setPage(0);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -38,6 +43,7 @@ export default function CustomerSearch() {
       const { customers } = await customersApi.search(term);
       setResults(customers);
       setMode('search');
+      setPage(0);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -59,7 +65,7 @@ export default function CustomerSearch() {
 
   return (
     <div className="card">
-      <PageHeader icon="customers" title="Customers" subtitle={subtitle}>
+      <PageHeader icon="users" title="Customers" subtitle={subtitle}>
         <motion.button {...tap} onClick={() => navigate('/agreements/new')}>
           <Svg d={ICONS.userPlus} size={16} /> New Agreement
         </motion.button>
@@ -92,13 +98,16 @@ export default function CustomerSearch() {
         </EmptyState>
       )}
 
-      {!busy && count > 0 && (
+      {!busy && count > 0 && (() => {
+        const pg = paginate(results, page, PER_PAGE);
+        return (
+        <>
         <table className="table">
           <thead>
             <tr><th>Name</th><th>Phone</th><th>NIC</th><th>Route</th><th>Agreements</th><th></th></tr>
           </thead>
           <motion.tbody variants={rowContainer} initial="hidden" animate="visible">
-            {results.map((c) => (
+            {pg.slice.map((c) => (
               <motion.tr key={c.id} variants={rowItem} className="clickable" onClick={() => navigate(`/customers/${c.id}`)}>
                 <td>
                   <span className="name-cell">
@@ -115,13 +124,19 @@ export default function CustomerSearch() {
                     : '—'}
                 </td>
                 <td className="row-actions">
-                  <button className="link" onClick={(e) => { e.stopPropagation(); navigate(`/customers/${c.id}`); }}>View →</button>
+                  <button className="row-go" title={`View ${c.name}`}
+                    onClick={(e) => { e.stopPropagation(); navigate(`/customers/${c.id}`); }}>
+                    <Svg d={ICONS.arrow} size={16} />
+                  </button>
                 </td>
               </motion.tr>
             ))}
           </motion.tbody>
         </table>
-      )}
+        <Pagination {...pg} onPage={setPage} unit="customers" />
+        </>
+        );
+      })()}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { jobsApi } from '../../api/jobs.api';
 import { PageHeader, EmptyState, Pill, Svg, ICONS, rowContainer, rowItem } from '../../components/ui';
+import Pagination, { paginate } from '../../components/Pagination';
 
 const fmt = (d) => {
   if (!d) return '—';
@@ -16,6 +17,7 @@ export default function Assignments() {
   const [jobs, setJobs] = useState([]);
   const [techs, setTechs] = useState([]);
   const [filter, setFilter] = useState('unassigned'); // 'unassigned' | 'all'
+  const [page, setPage] = useState(0);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState('');
   const [savingId, setSavingId] = useState(null);
@@ -61,10 +63,10 @@ export default function Assignments() {
         subtitle={busy ? 'Loading…' : `${unassignedCount} unassigned · ${jobs.length} upcoming visit${jobs.length === 1 ? '' : 's'}`} />
 
       <div className="seg" style={{ marginBottom: 16 }}>
-        <button type="button" className={filter === 'unassigned' ? 'active' : ''} onClick={() => setFilter('unassigned')}>
+        <button type="button" className={filter === 'unassigned' ? 'active' : ''} onClick={() => { setFilter('unassigned'); setPage(0); }}>
           Unassigned{unassignedCount ? ` (${unassignedCount})` : ''}
         </button>
-        <button type="button" className={filter === 'all' ? 'active' : ''} onClick={() => setFilter('all')}>
+        <button type="button" className={filter === 'all' ? 'active' : ''} onClick={() => { setFilter('all'); setPage(0); }}>
           All upcoming
         </button>
       </div>
@@ -79,13 +81,16 @@ export default function Assignments() {
             : 'Upcoming scheduled visits will appear here as agreements are created.'} />
       )}
 
-      {!busy && shown.length > 0 && (
+      {!busy && shown.length > 0 && (() => {
+        const pg = paginate(shown, page, 12);
+        return (
+        <>
         <table className="table">
           <thead>
             <tr><th>Date</th><th>Customer</th><th>AS-</th><th>AC Unit</th><th>Route</th><th>Technician</th></tr>
           </thead>
           <motion.tbody variants={rowContainer} initial="hidden" animate="visible">
-            {shown.map((j) => (
+            {pg.slice.map((j) => (
               <motion.tr key={j.id} variants={rowItem}>
                 <td>{fmt(j.scheduled_date)}</td>
                 <td>
@@ -113,7 +118,10 @@ export default function Assignments() {
             ))}
           </motion.tbody>
         </table>
-      )}
+        <Pagination {...pg} onPage={setPage} unit="visits" />
+        </>
+        );
+      })()}
     </div>
   );
 }
