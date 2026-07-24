@@ -8,7 +8,7 @@ export const jobsApi = {
   stats: () => api.get('/jobs/stats'),
   upcoming: (limit = 6) => api.get(`/jobs/upcoming?limit=${limit}`),
   toAssign: () => api.get('/jobs/to-assign'),
-  completeRequests: () => api.get('/jobs/complete-requests'),
+  completeRequests: (status) => api.get(`/jobs/complete-requests${status ? `?status=${status}` : ''}`),
   confirm: (id) => api.patch(`/jobs/${id}/confirm`, {}),
   photos: (id) => api.get(`/jobs/${id}/photos`),
   async photoUrl(jobId, photoId) {

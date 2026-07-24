@@ -233,10 +233,10 @@ const JobModel = {
   },
 
   /**
-   * Completion approval queue — technician-completed visits not yet confirmed.
-   * Includes photo_count so the admin knows what to review.
+   * Completed visits for the approvals screen. `confirmed=false` → pending queue;
+   * `confirmed=true` → already-approved history. Includes photo_count.
    */
-  async listCompleteRequests() {
+  async listCompletions(confirmed = false) {
     const [rows] = await pool.query(
       `SELECT j.*, a.agreement_no,
               c.id AS customer_id, c.name AS customer_name, c.phone, c.route,
@@ -247,8 +247,9 @@ const JobModel = {
          JOIN customers c ON a.customer_id = c.id
          JOIN ac_units ac ON a.ac_unit_id = ac.id
          LEFT JOIN users u ON j.technician_id = u.id
-        WHERE j.is_deleted = FALSE AND j.status = 'completed' AND j.admin_confirmed = FALSE
-        ORDER BY j.completed_at DESC, j.id DESC`
+        WHERE j.is_deleted = FALSE AND j.status = 'completed' AND j.admin_confirmed = ?
+        ORDER BY j.completed_at DESC, j.id DESC`,
+      [confirmed ? 1 : 0]
     );
     return rows;
   },

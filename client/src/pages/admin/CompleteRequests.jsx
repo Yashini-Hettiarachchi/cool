@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { jobsApi } from '../../api/jobs.api';
 import { PageHeader, EmptyState, Pill, Avatar, Svg, ICONS, rowContainer, rowItem } from '../../components/ui';
+import Lightbox from '../../components/Lightbox';
 
 /** Authenticated photo grid for one job (JWT is in memory → fetch as blobs). */
-function PhotoReview({ jobId }) {
+function PhotoReview({ jobId, onOpen }) {
   const [urls, setUrls] = useState([]);
   const [loaded, setLoaded] = useState(false);
 
@@ -25,9 +26,9 @@ function PhotoReview({ jobId }) {
   return (
     <div className="photo-grid">
       {urls.map((u, i) => (
-        <a className="photo-thumb" key={i} href={u} target="_blank" rel="noreferrer" title="Open full size">
+        <button type="button" className="photo-thumb" key={i} title="View photo" onClick={() => onOpen(urls, i)}>
           <img src={u} alt={`Job photo ${i + 1}`} />
-        </a>
+        </button>
       ))}
     </div>
   );
@@ -40,21 +41,24 @@ export default function CompleteRequests() {
   const [error, setError] = useState('');
   const [approving, setApproving] = useState(null);
   const [done, setDone] = useState('');
+  const [lb, setLb] = useState(null); // { images, index }
+  const [tab, setTab] = useState('pending'); // 'pending' | 'approved'
+  const approvedView = tab === 'approved';
 
-  function load() {
+  useEffect(() => {
     setBusy(true); setError('');
-    jobsApi.completeRequests()
+    jobsApi.completeRequests(approvedView ? 'approved' : undefined)
       .then(({ jobs }) => setJobs(jobs || []))
       .catch((e) => setError(e.message))
       .finally(() => setBusy(false));
-  }
-  useEffect(load, []);
+  }, [tab, approvedView]);
 
   async function approve(job) {
     setApproving(job.id); setError('');
     try {
       await jobsApi.confirm(job.id);
       setJobs((l) => l.filter((j) => j.id !== job.id));
+      window.dispatchEvent(new Event('approvals-changed')); // refresh sidebar badge
       setDone(`Approved ${job.agreement_no} — ${job.customer_name}.`);
       setTimeout(() => setDone(''), 3500);
     } catch (e) { setError(e.message); }
@@ -64,7 +68,15 @@ export default function CompleteRequests() {
   return (
     <div>
       <PageHeader icon="inbox" title="Completion Approvals"
-        subtitle={busy ? 'Loading…' : `${jobs.length} completion${jobs.length === 1 ? '' : 's'} awaiting your review.`} />
+        subtitle={busy ? 'Loading…'
+          : approvedView
+            ? `${jobs.length} approved completion${jobs.length === 1 ? '' : 's'}.`
+            : `${jobs.length} completion${jobs.length === 1 ? '' : 's'} awaiting your review.`} />
+
+      <div className="seg" style={{ marginBottom: 16 }}>
+        <button type="button" className={!approvedView ? 'active' : ''} onClick={() => setTab('pending')}>Pending</button>
+        <button type="button" className={approvedView ? 'active' : ''} onClick={() => setTab('approved')}>Approved</button>
+      </div>
 
       <AnimatePresence>
         {done && (
@@ -74,8 +86,11 @@ export default function CompleteRequests() {
       {error && <p className="error">{error}</p>}
 
       {!busy && jobs.length === 0 && !error && (
-        <EmptyState icon="inbox" title="Nothing to approve"
-          hint="When a technician completes a visit, it lands here with their photos for you to review and confirm." />
+        approvedView
+          ? <EmptyState icon="inbox" title="No approved completions yet"
+              hint="Once you approve a technician's completed visit, it will be listed here." />
+          : <EmptyState icon="inbox" title="Nothing to approve"
+              hint="When a technician completes a visit, it lands here with their photos for you to review and confirm." />
       )}
 
       <motion.div className="approve-list" variants={rowContainer} initial="hidden" animate="visible">
@@ -103,17 +118,23 @@ export default function CompleteRequests() {
 
             {job.comments && <p className="approve-comment">“{job.comments}”</p>}
 
-            <PhotoReview jobId={job.id} />
+            <PhotoReview jobId={job.id} onOpen={(images, index) => setLb({ images, index })} />
 
             <div className="approve-actions">
+              {approvedView && <Pill tone="green">Approved</Pill>}
               <button className="btn ghost" onClick={() => navigate(`/jobs/${job.id}`)}>Open full detail</button>
-              <button className="btn primary" disabled={approving === job.id} onClick={() => approve(job)}>
-                <Svg d="M20 6L9 17l-5-5" size={16} /> {approving === job.id ? 'Approving…' : 'Approve completion'}
-              </button>
+              {!approvedView && (
+                <button className="btn primary" disabled={approving === job.id} onClick={() => approve(job)}>
+                  <Svg d="M20 6L9 17l-5-5" size={16} /> {approving === job.id ? 'Approving…' : 'Approve completion'}
+                </button>
+              )}
             </div>
           </motion.div>
         ))}
       </motion.div>
+
+      <Lightbox images={lb?.images || []} index={lb?.index}
+        onClose={() => setLb(null)} onIndex={(i) => setLb((s) => ({ ...s, index: i }))} />
     </div>
   );
 }

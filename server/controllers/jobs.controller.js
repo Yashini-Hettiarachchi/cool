@@ -42,10 +42,12 @@ const JobsController = {
     catch (err) { next(err); }
   },
 
-  /** GET /api/jobs/complete-requests — completions awaiting admin approval. */
+  /** GET /api/jobs/complete-requests?status=approved — pending (default) or approved completions. */
   async completeRequests(req, res, next) {
-    try { res.json({ jobs: await JobModel.listCompleteRequests() }); }
-    catch (err) { next(err); }
+    try {
+      const confirmed = req.query.status === 'approved';
+      res.json({ jobs: await JobModel.listCompletions(confirmed) });
+    } catch (err) { next(err); }
   },
 
   /** PATCH /api/jobs/:id/confirm — approve a completed job. */

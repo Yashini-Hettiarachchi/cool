@@ -180,6 +180,9 @@ A technician can now log in on a phone, see today's assigned jobs, search any jo
   - Frontend: **Approvals** screen (`/complete-requests`, Scheduling nav) — one card per pending completion showing customer, AC, technician, service type, comment, and the **uploaded photos** (authenticated blob thumbnails, click to open full size) + **Approve** button. Dashboard "Pending Approvals" tile links here.
   - Technician can now **see their own uploaded photos** after completing (the completed view previously hid them).
   - Verified: `GET /jobs/complete-requests` returns pending completions with photo counts; build OK.
+  - **Sidebar badge** — live pending-approvals count on the Approvals nav item (initial fetch + 60s poll + instant refresh via an `approvals-changed` window event on approve; office roles only).
+  - **Photo lightbox** — reusable `components/Lightbox.jsx`; approval photos open as an in-window popup (prev/next, Esc/←/→, counter) instead of a new browser tab.
+  - **Pending / Approved tabs** — Approvals screen now filters between the pending queue and already-approved history (`GET /jobs/complete-requests?status=approved`; `JobModel.listCompletions(confirmed)`). Approved cards show an "Approved" pill, no Approve button.
 - **Installed Vercel skills** into `~/.claude/skills`: web-design-guidelines, react-best-practices, composition-patterns, writing-guidelines.
 - **Still TODO for Phase 5:** confirmation should fire the Completion SMS (Text.lk) + log to `sms_logs`; reminder cron.
 

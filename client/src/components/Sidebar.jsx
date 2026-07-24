@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useAuth } from '../auth/AuthContext';
+import { jobsApi } from '../api/jobs.api';
 
 /* Minimal inline icon set (stroke, 24-grid) — no external dependency. */
 const Icon = ({ d }) => (
@@ -55,8 +57,24 @@ export default function Sidebar({ open, onNavigate }) {
   const { user, logout } = useAuth();
   const isAdmin = user?.role === 'admin';
   const isTech = user?.role === 'technician';
+  const [pending, setPending] = useState(0);
+
+  // Live pending-approvals badge (office roles only). Refreshes on a light poll,
+  // on route navigation, and immediately when an approval is made elsewhere.
+  useEffect(() => {
+    if (isTech) return undefined;
+    let alive = true;
+    const refresh = () => jobsApi.stats()
+      .then(({ stats }) => { if (alive) setPending(stats.pendingApprovals || 0); })
+      .catch(() => {});
+    refresh();
+    const id = setInterval(refresh, 60000);
+    window.addEventListener('approvals-changed', refresh);
+    return () => { alive = false; clearInterval(id); window.removeEventListener('approvals-changed', refresh); };
+  }, [isTech]);
 
   const groups = isTech ? NAV.technician : [...NAV.office, ...(isAdmin ? NAV.admin : [])];
+  const badges = { '/complete-requests': pending };
   const initials = (user?.name || '?').split(' ').map((s) => s[0]).slice(0, 2).join('').toUpperCase();
 
   return (
@@ -83,6 +101,7 @@ export default function Sidebar({ open, onNavigate }) {
               >
                 <Icon d={ICONS[it.icon]} />
                 <span>{it.name}</span>
+                {badges[it.to] > 0 && <span className="nav-badge">{badges[it.to]}</span>}
               </NavLink>
             ))}
           </div>
