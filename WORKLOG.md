@@ -10,10 +10,10 @@ A running history of what was done, session by session. Newest entries at the to
 Read the full design documentation set, set up the phased build-tracking structure (`plans/`), and **built Phase 1 end-to-end** — backend API + React client for project setup, DB schema, authentication, and Admin user/pricing management.
 
 ### Done — Documentation & tracking
-- **Reviewed all design docs** in [design-plans/](design-plans/):
+- **Reviewed all design docs** in [design-plans/](docs/design-plans/):
   - `01_Conversation_Summary`, `02_System_Functions_And_Workflows`, `03_System_Architecture`, `04_Folder_Structure`, `05_Overall_Design_Plan`, `06_Database_Design`, `07_Database_Setup_Guide_MySQL`, `08_Implementation_Plan_Step_By_Step`, `10_Tech_Stack`.
   - Confirmed stack: React + Node/Express + MySQL, deployed to cPanel, SMS via Text.lk, whole app mounted under `/admin`.
-- **Created `plans/` folder** ([plans/](plans/)) — status-tracking [README.md](plans/README.md) + one folder per phase (1–10), each with `plan.md` (tasks + checkpoint) and `issues.md` (risks + mitigations).
+- **Created `plans/` folder** ([plans/](docs/plans/)) — status-tracking [README.md](docs/plans/README.md) + one folder per phase (1–10), each with `plan.md` (tasks + checkpoint) and `issues.md` (risks + mitigations).
 - **Root [.gitignore](.gitignore)** and **[README.md](README.md)** (setup instructions).
 
 ### Done — Phase 1 build ✅
@@ -57,7 +57,7 @@ Ran `npm run db:init` (9 tables created) + `npm run seed:admin` (admin id=1), th
 ### DB options recap (no local install needed)
 1. **Docker Compose (chosen)** — `docker compose up -d` from repo root.
 2. Free cloud MySQL (Railway/Aiven/PlanetScale) — paste creds into `.env`.
-3. cPanel Remote MySQL (Phase 9+). Full detail in [plans/phase-01-setup-db-auth/issues.md](plans/phase-01-setup-db-auth/issues.md#getting-a-database-without-installing-mysql-locally).
+3. cPanel Remote MySQL (Phase 9+). Full detail in [plans/phase-01-setup-db-auth/issues.md](docs/plans/phase-01-setup-db-auth/issues.md#getting-a-database-without-installing-mysql-locally).
 
 ### Environment notes / decisions
 - **No local MySQL** (`mysql` CLI absent) — use `npm run db:init` (Node-based) against cPanel/local/Docker MySQL. Server boots without a DB; DB-backed calls fail until connected.
@@ -163,4 +163,4 @@ A technician can now log in on a phone, see today's assigned jobs, search any jo
 **Deployed to the running dev server:** the stale :3000 node process (pre–Phase 4 code) was killed and the server restarted via `npm run dev` (nodemon, auto-reload) so `/admin` now serves the Phase 4 build. Test login for the technician surface: **`testtech` / `tech123`**. Note this run left sample data in the dev DB (technician `testtech`; AS-00001 visit #1 completed with 2 photos, awaiting approval) — delete it for a clean slate.
 
 ### Next steps (Phase 5)
-Job completion approval workflow (admin confirms queued completions → finalize + loyalty/SMS) and renewals — see [plans/](plans/).
+Job completion approval workflow (admin confirms queued completions → finalize + loyalty/SMS) and renewals — see [plans/](docs/plans/).

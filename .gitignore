@@ -25,3 +25,6 @@ npm-debug.log*
 Thumbs.db
 .vscode/
 .idea/
+
+# Project docs (design plans, phase plans, wireframes) — local only
+docs/

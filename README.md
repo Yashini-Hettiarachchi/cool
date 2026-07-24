@@ -2,8 +2,8 @@
 
 Web-based system for an AC servicing company: 1-year service agreements, automated SMS, technician scheduling with photo proof, renewals, reporting. React + Node/Express + MySQL, deployed to cPanel. The whole app is mounted under `/admin` (root reserved for a future showcase site).
 
-- **Design docs:** [`design-plans/`](design-plans/)
-- **Phased build plan & issues log:** [`plans/`](plans/)
+- **Design docs:** [`design-plans/`](docs/design-plans/)
+- **Phased build plan & issues log:** [`plans/`](docs/plans/)
 - **Work history:** [`WORKLOG.md`](WORKLOG.md)
 
 ## Repository layout
@@ -47,4 +47,4 @@ Login is by **username + password** (per client requirement; phone is contact in
 - **Password:** value of `SEED_ADMIN_PASSWORD` (default `admin123`) — change after first login.
 
 ## Status
-**Phase 1 complete** — project setup, DB schema, authentication, Admin user & pricing management. See [`plans/README.md`](plans/README.md) for the full phase roadmap.
+**Phase 1 complete** — project setup, DB schema, authentication, Admin user & pricing management. See [`plans/README.md`](docs/plans/README.md) for the full phase roadmap.
