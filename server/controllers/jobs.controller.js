@@ -36,6 +36,12 @@ const JobsController = {
     catch (err) { next(err); }
   },
 
+  /** GET /api/jobs/to-assign — upcoming active visits for the Assignments board. */
+  async toAssign(req, res, next) {
+    try { res.json({ jobs: await JobModel.listToAssign() }); }
+    catch (err) { next(err); }
+  },
+
   /** GET /api/jobs/deleted */
   async deleted(req, res, next) {
     try { res.json({ jobs: await JobModel.listDeleted() }); }

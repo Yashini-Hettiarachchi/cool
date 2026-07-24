@@ -12,6 +12,11 @@ Legend: `[ ]` to do · `[~]` partially done · `[x]` done
 - [x] **Phase 3** — Calendar, technician assignment, postpone / cancel / soft-delete
 - [x] **Phase 4** — Technician mobile module (today's jobs, AS- search, start/complete, photo upload)
 
+### Post–Phase 4 enhancements (client feedback, 2026-07-24)
+- [x] Consolidated all docs under a single root **`docs/`** folder (design-plans, plans, wireframes)
+- [x] **Customers page lists all customers by default** (`GET /api/customers`), search still filters incl. AS-, agreement-count column
+- [x] **Assignments board** (`/assignments`) — one list of upcoming visits, Unassigned/All filter, **inline technician dropdown** so admin/system-user can assign without opening the calendar
+
 ---
 
 ## Roles — System User (office staff) ⚠️

@@ -7,6 +7,7 @@ export const jobsApi = {
   technicians: () => api.get('/jobs/technicians'),
   stats: () => api.get('/jobs/stats'),
   upcoming: (limit = 6) => api.get(`/jobs/upcoming?limit=${limit}`),
+  toAssign: () => api.get('/jobs/to-assign'),
   deleted: () => api.get('/jobs/deleted'),
   cancelled: () => api.get('/jobs/cancelled'),
   assign: (id, technician_id) => api.patch(`/jobs/${id}/assign`, { technician_id }),

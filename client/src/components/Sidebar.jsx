@@ -30,6 +30,7 @@ const NAV = {
     ] },
     { label: 'Scheduling', items: [
       { to: '/calendar', icon: 'calendar', name: 'Calendar' },
+      { to: '/assignments', icon: 'jobs', name: 'Assignments' },
       { to: '/cancellations', icon: 'cancel', name: 'Cancellations' },
       { to: '/deleted-jobs', icon: 'trash', name: 'Deleted Jobs' },
     ] },

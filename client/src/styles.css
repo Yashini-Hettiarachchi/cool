@@ -750,6 +750,10 @@ input, select { padding: 11px 13px; }
   .tech-info { grid-template-columns: 1fr; }
 }
 
+/* Assignments board — inline technician picker */
+.assign-cell { display: inline-flex; align-items: center; gap: 8px; }
+.assign-cell select { margin-top: 0; width: auto; min-width: 140px; padding: 6px 10px; }
+
 @media (prefers-reduced-motion: reduce) {
   * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }

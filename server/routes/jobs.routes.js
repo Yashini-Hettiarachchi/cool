@@ -32,6 +32,7 @@ router.get('/by-agreement/:as_number', anyRole, JobsController.byAgreement);
 router.get('/technicians', office, JobsController.technicians);
 router.get('/stats', office, JobsController.stats);
 router.get('/upcoming', office, JobsController.upcoming);
+router.get('/to-assign', office, JobsController.toAssign);
 router.get('/deleted', office, JobsController.deleted);
 router.get('/cancelled', office, JobsController.cancelled);
 router.get('/', office, JobsController.list);

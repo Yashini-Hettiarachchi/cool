@@ -162,5 +162,12 @@ A technician can now log in on a phone, see today's assigned jobs, search any jo
 
 **Deployed to the running dev server:** the stale :3000 node process (pre–Phase 4 code) was killed and the server restarted via `npm run dev` (nodemon, auto-reload) so `/admin` now serves the Phase 4 build. Test login for the technician surface: **`testtech` / `tech123`**. Note this run left sample data in the dev DB (technician `testtech`; AS-00001 visit #1 completed with 2 photos, awaiting approval) — delete it for a clean slate.
 
+### Post–Phase 4 tweaks (client feedback, 2026-07-24)
+- **Consolidated docs** — moved `design-plans/`, `plans/`, `wireframes/` under a single root **`docs/`** folder; fixed the links in `README.md`/`WORKLOG.md` (in-folder links still resolve). (`.gitignore` `docs/` entry was added then removed by the client — docs are tracked.)
+- **Customers page lists everyone by default** — new `GET /api/customers` (`CustomerModel.listAll`, with per-customer `agreement_count`); the page loads all customers on open, search still filters (incl. AS-), added a "Show all" reset, an Agreements count column, and a live header count.
+- **New Assignments board** (`/assignments`, Scheduling nav) so the office isn't hunting the calendar to assign — `GET /api/jobs/to-assign` (upcoming `scheduled`/`postponed`, not deleted) → `Assignments.jsx` with an **Unassigned / All** filter and an **inline technician dropdown** (assign in place, reuses `PATCH /jobs/:id/assign`). Verified: endpoint returns upcoming active visits; build OK (466 modules).
+- **Test-data note:** set AS-00001 visit 4 to today/`scheduled`/`testtech` so the technician photo-upload flow is visible (it's hidden on completed jobs). Login `testtech` / `tech123`.
+- **Demo data seeder** — `server/db/seed-demo.js` (`npm run seed:demo`), idempotent (keys off phones `07999*`, wipes only its own set, continues AS- serial). 5 customers → 7 agreements, 21 jobs covering every scenario: (1) fresh/all-unassigned, (2) assigned + in-progress today, (3) completed-awaiting-approval, (4) confirmed-complete-this-month + postponed, (5) 3-yr loyalty customer with 2 ACs, a renewal chain (`parent_agreement_id`), an archived (cancelled) agreement, a cancelled job (Cancellations) and a soft-deleted job (Deleted Jobs). Photo rows are placeholders (counts populate; thumbnails 404).
+
 ### Next steps (Phase 5)
 Job completion approval workflow (admin confirms queued completions → finalize + loyalty/SMS) and renewals — see [plans/](docs/plans/).

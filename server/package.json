@@ -8,6 +8,7 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "seed:admin": "node db/seed-admin.js",
+    "seed:demo": "node db/seed-demo.js",
     "db:init": "node db/init-db.js"
   },
   "engines": {

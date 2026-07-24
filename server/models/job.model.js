@@ -217,6 +217,21 @@ const JobModel = {
     };
   },
 
+  /**
+   * Upcoming active visits (today onward) for the Assignments board —
+   * scheduled or postponed, not deleted. Includes technician (may be NULL).
+   */
+  async listToAssign() {
+    const [rows] = await pool.query(
+      `${JOB_JOIN}
+        WHERE j.is_deleted = FALSE
+          AND j.status IN ('scheduled', 'postponed')
+          AND j.scheduled_date >= CURDATE()
+        ORDER BY (j.technician_id IS NOT NULL), j.scheduled_date, j.id`
+    );
+    return rows;
+  },
+
   /** Next scheduled visits from today onward. */
   async upcoming(limit = 6) {
     const [rows] = await pool.query(
