@@ -165,15 +165,34 @@ export default function JobDetail() {
       </div>
 
       {done ? (
-        <div className="card tech-complete-card">
-          <span className="tc-ico"><Svg d={ICONS.star} size={22} /></span>
-          <div>
-            <strong>Completed</strong>
-            <p className="muted" style={{ margin: '2px 0 0', fontSize: 13 }}>
-              Logged as {job.service_type_used === 'hp' ? 'H/P' : 'Normal'} service · awaiting admin approval.
-            </p>
+        <>
+          <div className="card tech-complete-card">
+            <span className="tc-ico"><Svg d={ICONS.star} size={22} /></span>
+            <div>
+              <strong>Completed</strong>
+              <p className="muted" style={{ margin: '2px 0 0', fontSize: 13 }}>
+                Logged as {job.service_type_used === 'hp' ? 'H/P' : 'Normal'} service · awaiting admin approval.
+              </p>
+            </div>
           </div>
-        </div>
+          <div className="card tech-photos">
+            <div className="tech-block-head">
+              <span><Svg d={ICONS.file} size={16} /> Your photos</span>
+              <span className="photo-count">{photos.length}</span>
+            </div>
+            {photos.length === 0
+              ? <p className="muted" style={{ margin: '4px 0 0', fontSize: 13 }}>No photos were uploaded for this visit.</p>
+              : (
+                <div className="photo-grid">
+                  {photos.map((p) => (
+                    <div className="photo-thumb" key={p.id}>
+                      {urls[p.id] ? <img src={urls[p.id]} alt="job" /> : <span className="photo-loading" />}
+                    </div>
+                  ))}
+                </div>
+              )}
+          </div>
+        </>
       ) : (
         <>
           {/* Start */}

@@ -169,5 +169,19 @@ A technician can now log in on a phone, see today's assigned jobs, search any jo
 - **Test-data note:** set AS-00001 visit 4 to today/`scheduled`/`testtech` so the technician photo-upload flow is visible (it's hidden on completed jobs). Login `testtech` / `tech123`.
 - **Demo data seeder** — `server/db/seed-demo.js` (`npm run seed:demo`), idempotent (keys off phones `07999*`, wipes only its own set, continues AS- serial). 5 customers → 7 agreements, 21 jobs covering every scenario: (1) fresh/all-unassigned, (2) assigned + in-progress today, (3) completed-awaiting-approval, (4) confirmed-complete-this-month + postponed, (5) 3-yr loyalty customer with 2 ACs, a renewal chain (`parent_agreement_id`), an archived (cancelled) agreement, a cancelled job (Cancellations) and a soft-deleted job (Deleted Jobs). Photo rows are placeholders (counts populate; thumbnails 404).
 
-### Next steps (Phase 5)
+### UI pass + Completion Approvals (client feedback, 2026-07-24)
+- **Reusable pagination** — `components/Pagination.jsx` (+ `paginate()` helper) applied to Customers (15/pg), Assignments (12), Cancellations (12), Deleted Jobs (12), Users (12), and Dashboard Upcoming (5). Numbered pages with ellipsis windowing, chevron prev/next, range label, page-reset on search/filter.
+- **Buttons** — replaced all tiny text arrows (`→`/`←`) with crisp SVG chevrons across pagination, dashboard tiles, pill-links, row "view", and back links; consistent hover/focus.
+- **Layout fix** — `.content` was `max-width:1100px` with no auto-margin (content pinned to one side, dead space). Now `max-width:1320px; margin:0 auto` — centered/balanced app-wide.
+- **Dashboard redesigned** — light time-of-day greeting (replaced the heavy dark hero), cleaner KPI tiles reordered so **Pending Approvals leads** (red "attention" ring when >0), and a **2-column** layout (Upcoming Visits + compact Quick actions) to cut vertical scroll.
+- **Bug fixes** — job detail pages went blank (`/jobs/:id`) because a back-link referenced a missing local icon key → crash; fixed + hardened JobSlot's `Svg`. Assignments header showed an empty box (shared icon set had no `jobs` key) → added it.
+- **Completion Approvals (Phase 5 core) ✅** — technician completions now have a review+approve home:
+  - Backend: `GET /api/jobs/complete-requests` (completed + `admin_confirmed=FALSE`, with `photo_count`), `PATCH /api/jobs/:id/confirm` (office-only → sets `admin_confirmed=TRUE`). Photo file endpoint already admin-readable (ownsJob bypass for office).
+  - Frontend: **Approvals** screen (`/complete-requests`, Scheduling nav) — one card per pending completion showing customer, AC, technician, service type, comment, and the **uploaded photos** (authenticated blob thumbnails, click to open full size) + **Approve** button. Dashboard "Pending Approvals" tile links here.
+  - Technician can now **see their own uploaded photos** after completing (the completed view previously hid them).
+  - Verified: `GET /jobs/complete-requests` returns pending completions with photo counts; build OK.
+- **Installed Vercel skills** into `~/.claude/skills`: web-design-guidelines, react-best-practices, composition-patterns, writing-guidelines.
+- **Still TODO for Phase 5:** confirmation should fire the Completion SMS (Text.lk) + log to `sms_logs`; reminder cron.
+
+### Next steps (Phase 5 remainder)
 Job completion approval workflow (admin confirms queued completions → finalize + loyalty/SMS) and renewals — see [plans/](docs/plans/).

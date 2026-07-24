@@ -232,6 +232,33 @@ const JobModel = {
     return rows;
   },
 
+  /**
+   * Completion approval queue — technician-completed visits not yet confirmed.
+   * Includes photo_count so the admin knows what to review.
+   */
+  async listCompleteRequests() {
+    const [rows] = await pool.query(
+      `SELECT j.*, a.agreement_no,
+              c.id AS customer_id, c.name AS customer_name, c.phone, c.route,
+              ac.brand, ac.model, u.name AS technician_name,
+              (SELECT COUNT(*) FROM job_photos p WHERE p.job_id = j.id) AS photo_count
+         FROM jobs j
+         JOIN agreements a ON j.agreement_id = a.id
+         JOIN customers c ON a.customer_id = c.id
+         JOIN ac_units ac ON a.ac_unit_id = ac.id
+         LEFT JOIN users u ON j.technician_id = u.id
+        WHERE j.is_deleted = FALSE AND j.status = 'completed' AND j.admin_confirmed = FALSE
+        ORDER BY j.completed_at DESC, j.id DESC`
+    );
+    return rows;
+  },
+
+  /** Admin/office confirms a completed job (finalizes it out of the queue). */
+  async confirm(id) {
+    await pool.query('UPDATE jobs SET admin_confirmed = TRUE WHERE id = ?', [id]);
+    return this.detail(id);
+  },
+
   /** Next scheduled visits from today onward. */
   async upcoming(limit = 6) {
     const [rows] = await pool.query(

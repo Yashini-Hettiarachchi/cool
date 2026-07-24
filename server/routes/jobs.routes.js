@@ -33,6 +33,7 @@ router.get('/technicians', office, JobsController.technicians);
 router.get('/stats', office, JobsController.stats);
 router.get('/upcoming', office, JobsController.upcoming);
 router.get('/to-assign', office, JobsController.toAssign);
+router.get('/complete-requests', office, JobsController.completeRequests);
 router.get('/deleted', office, JobsController.deleted);
 router.get('/cancelled', office, JobsController.cancelled);
 router.get('/', office, JobsController.list);
@@ -48,6 +49,7 @@ router.post('/:id/photos', anyRole, ownsJob, uploadPhotos, JobsController.upload
 router.patch('/:id/comment', anyRole, ownsJob, JobsController.comment);
 
 // --- Office lifecycle actions ---
+router.patch('/:id/confirm', office, JobsController.confirm);
 router.patch('/:id/assign', office, JobsController.assign);
 router.patch('/:id/postpone', office, JobsController.postpone);
 router.patch('/:id/cancel', office, JobsController.cancel);

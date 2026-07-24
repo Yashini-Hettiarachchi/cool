@@ -19,6 +19,7 @@ const ICONS = {
   price: ['M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z', 'M7 7h.01'],
   jobs: ['M20 7h-3V4a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v3H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z'],
   search: ['M21 21l-4.35-4.35', 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z'],
+  approve: ['M9 11l3 3L22 4', 'M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
 };
 
 const NAV = {
@@ -31,6 +32,7 @@ const NAV = {
     { label: 'Scheduling', items: [
       { to: '/calendar', icon: 'calendar', name: 'Calendar' },
       { to: '/assignments', icon: 'jobs', name: 'Assignments' },
+      { to: '/complete-requests', icon: 'approve', name: 'Approvals' },
       { to: '/cancellations', icon: 'cancel', name: 'Cancellations' },
       { to: '/deleted-jobs', icon: 'trash', name: 'Deleted Jobs' },
     ] },

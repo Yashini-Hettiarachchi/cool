@@ -11,7 +11,7 @@ const PER_PAGE = 5;
 
 /* KPIs — the numbers a manager scans first. "Needs attention" ones lead. */
 const STAT_DEFS = [
-  { key: 'pendingApprovals', label: 'Pending Approvals', tone: 'pink', to: '/calendar', accent: true, icon: 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11' },
+  { key: 'pendingApprovals', label: 'Pending Approvals', tone: 'pink', to: '/complete-requests', accent: true, icon: 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11' },
   { key: 'upcoming', label: 'Upcoming Visits', tone: 'amber', to: '/calendar', icon: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z' },
   { key: 'activeAgreements', label: 'Active Agreements', tone: 'blue', to: '/customers', icon: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8' },
   { key: 'customers', label: 'Customers', tone: 'brand', to: '/customers', icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8' },

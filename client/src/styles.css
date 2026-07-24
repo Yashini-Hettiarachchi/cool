@@ -826,6 +826,18 @@ input, select { padding: 11px 13px; }
 .pg-num.active, .pg-num.active:hover { background: var(--brand); color: #fff; border-color: transparent; }
 .pg-ellipsis { padding: 0 4px; color: var(--faint); font-weight: 600; }
 
+/* Completion approvals */
+.approve-list { display: flex; flex-direction: column; gap: 16px; }
+.approve-card { display: flex; flex-direction: column; gap: 12px; }
+.approve-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.approve-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--muted); }
+.approve-meta span { display: inline-flex; align-items: center; gap: 6px; }
+.approve-comment { margin: 0; font-size: 13.5px; color: var(--ink); background: var(--bg); border-left: 3px solid var(--border-strong);
+  padding: 8px 12px; border-radius: 0 8px 8px 0; font-style: italic; }
+.approve-card .photo-thumb { display: block; }
+.approve-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+.approve-actions .btn.primary { display: inline-flex; align-items: center; gap: 7px; }
+
 /* Back link (top of Job Detail) */
 .back-link { display: inline-flex; align-items: center; gap: 7px; background: transparent; border: none;
   color: var(--muted); font-size: 14px; font-weight: 600; padding: 4px 6px 4px 0; margin-bottom: 8px; box-shadow: none; }

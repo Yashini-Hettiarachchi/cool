@@ -16,6 +16,9 @@ Legend: `[ ]` to do · `[~]` partially done · `[x]` done
 - [x] Consolidated all docs under a single root **`docs/`** folder (design-plans, plans, wireframes)
 - [x] **Customers page lists all customers by default** (`GET /api/customers`), search still filters incl. AS-, agreement-count column
 - [x] **Assignments board** (`/assignments`) — one list of upcoming visits, Unassigned/All filter, **inline technician dropdown** so admin/system-user can assign without opening the calendar
+- [x] **Reusable pagination** across Customers/Assignments/Cancellations/Deleted Jobs/Users/Dashboard; SVG-chevron buttons; centered layout fix; **dashboard redesign** (light hero, KPI reorder, 2-column)
+- [x] **Completion Approvals screen** (`/complete-requests`) — admin reviews technician photos & approves (`PATCH /jobs/:id/confirm`); technician can now see their own uploaded photos
+- [x] Fixed blank job-detail pages and the Assignments missing-icon
 
 ---
 
@@ -26,17 +29,17 @@ The `system_user` role is **plumbed in but never verified end-to-end**, and the 
 - [x] Admin can create a System User account (AddUsers → role dropdown)
 - [x] Frontend routes/sidebar treat `system_user` as office (no Users/Pricing nav)
 - [ ] **Verify a System User end-to-end** — log in as a `system_user`, confirm access to Customers / New Agreement / Calendar / Jobs / Cancellations / Deleted Jobs, and confirm they are **blocked (403)** from `/api/users` and `/api/pricing` and don't see those nav items
-- [ ] **Completion approval queue** (the main shared admin/system_user job) — *see Phase 5 below*; without it, technician completions pile up with `admin_confirmed=FALSE` and nobody can confirm them
+- [x] **Completion approval queue** — built (`/complete-requests`); admin/system_user reviews photos & confirms. *(SMS-on-confirm still pending — see Phase 5.)*
 - [ ] Seed or document a default System User login for testing (only `admin` + technicians exist today)
 
 ---
 
 ## Phase 5 — SMS & Job Complete Requests  ⬅️ next
 **Goal:** technician completions land in a review queue; admin/system-user confirmation fires the Completion SMS and logs it; reminder cron runs on schedule.
-- [ ] `GET /api/jobs/complete-requests` — list jobs where `status='completed'` AND `admin_confirmed=FALSE` (with photos, comments, service type)
-- [ ] `PATCH /api/jobs/:id/confirm` — admin/system_user sets `admin_confirmed=TRUE`; **this** fires the Completion SMS (not the technician's Complete tap)
-- [ ] "Job Complete Requests" review screen — photo/comment review, Confirm button (the Dashboard already counts `pendingApprovals`, but nothing opens the queue yet)
-- [ ] Completion SMS template + log to `sms_logs`
+- [x] `GET /api/jobs/complete-requests` — list jobs where `status='completed'` AND `admin_confirmed=FALSE` (with photo_count, comments, service type)
+- [x] `PATCH /api/jobs/:id/confirm` — admin/system_user sets `admin_confirmed=TRUE`
+- [x] "Completion Approvals" review screen (`/complete-requests`) — photo review, Approve button
+- [ ] Wire the Completion SMS to fire **on confirm** (not on the technician's Complete tap) + log to `sms_logs`
 - [ ] Reminder cron (upcoming visits) on schedule
 - [ ] Flip `SMS_ENABLED=true` path verified against Text.lk (currently log-only)
 

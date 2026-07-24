@@ -13,6 +13,7 @@ import CustomerProfile from './pages/admin/CustomerProfile';
 import NewAgreement from './pages/admin/NewAgreement';
 import Calendar from './pages/admin/Calendar';
 import Assignments from './pages/admin/Assignments';
+import CompleteRequests from './pages/admin/CompleteRequests';
 import JobSlot from './pages/admin/JobSlot';
 import DeletedJobs from './pages/admin/DeletedJobs';
 import JobCancellations from './pages/admin/JobCancellations';
@@ -34,6 +35,7 @@ function AnimatedRoutes({ home }) {
           <Route path="/agreements/new" element={<ProtectedRoute roles={office}><NewAgreement /></ProtectedRoute>} />
           <Route path="/calendar" element={<ProtectedRoute roles={office}><Calendar /></ProtectedRoute>} />
           <Route path="/assignments" element={<ProtectedRoute roles={office}><Assignments /></ProtectedRoute>} />
+          <Route path="/complete-requests" element={<ProtectedRoute roles={office}><CompleteRequests /></ProtectedRoute>} />
           <Route path="/jobs/:id" element={<ProtectedRoute roles={office}><JobSlot /></ProtectedRoute>} />
           <Route path="/cancellations" element={<ProtectedRoute roles={office}><JobCancellations /></ProtectedRoute>} />
           <Route path="/deleted-jobs" element={<ProtectedRoute roles={office}><DeletedJobs /></ProtectedRoute>} />

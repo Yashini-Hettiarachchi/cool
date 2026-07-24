@@ -42,6 +42,18 @@ const JobsController = {
     catch (err) { next(err); }
   },
 
+  /** GET /api/jobs/complete-requests — completions awaiting admin approval. */
+  async completeRequests(req, res, next) {
+    try { res.json({ jobs: await JobModel.listCompleteRequests() }); }
+    catch (err) { next(err); }
+  },
+
+  /** PATCH /api/jobs/:id/confirm — approve a completed job. */
+  async confirm(req, res, next) {
+    try { res.json({ job: await JobModel.confirm(req.params.id) }); }
+    catch (err) { next(err); }
+  },
+
   /** GET /api/jobs/deleted */
   async deleted(req, res, next) {
     try { res.json({ jobs: await JobModel.listDeleted() }); }
