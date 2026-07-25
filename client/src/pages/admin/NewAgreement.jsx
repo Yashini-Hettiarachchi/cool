@@ -202,6 +202,25 @@ export default function NewAgreement() {
           </label>
         </div>
 
+        {(() => {
+          const price = agreement.price === '' ? null : Number(agreement.price);
+          const paid = agreement.amount_paid === '' ? null : Number(agreement.amount_paid);
+          if (price == null || paid == null || Number.isNaN(price) || Number.isNaN(paid)) return null;
+          const bal = price - paid;
+          if (bal > 0) return (
+            <div className="pay-check short">
+              <span className="fn-ico"><Svg d={ICONS.xCircle} size={18} /></span>
+              <span>Amount paid is <b>LKR {bal.toLocaleString()}</b> short of the agreed price. Enter this agreement only once payment is complete.</span>
+            </div>
+          );
+          return (
+            <div className="pay-check ok">
+              <span className="fn-ico"><Svg d="M20 6L9 17l-5-5" size={18} /></span>
+              <span>Payment {bal < 0 ? 'exceeds' : 'matches'} the agreed price — good to go.</span>
+            </div>
+          );
+        })()}
+
         <div className="form-note">
           <span className="fn-ico"><Svg d={ICONS.calendar} size={18} /></span>
           <span>

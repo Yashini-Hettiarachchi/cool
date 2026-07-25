@@ -15,7 +15,7 @@ const STATUS_CLASS = {
   completed: 'st-completed', cancelled: 'st-cancelled',
 };
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const LEGEND = [['scheduled', 'Scheduled'], ['postponed', 'Postponed'], ['completed', 'Completed'], ['cancelled', 'Cancelled']];
+const LEGEND = [['scheduled', 'Scheduled'], ['in_progress', 'In progress'], ['postponed', 'Postponed'], ['completed', 'Completed'], ['cancelled', 'Cancelled']];
 
 function ym(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
 

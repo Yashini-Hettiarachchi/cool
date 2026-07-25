@@ -40,6 +40,7 @@ export default function CompleteRequests() {
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState('');
   const [approving, setApproving] = useState(null);
+  const [confirmId, setConfirmId] = useState(null); // job pending a 2nd-step confirm
   const [done, setDone] = useState('');
   const [lb, setLb] = useState(null); // { images, index }
   const [tab, setTab] = useState('pending'); // 'pending' | 'approved'
@@ -54,7 +55,7 @@ export default function CompleteRequests() {
   }, [tab, approvedView]);
 
   async function approve(job) {
-    setApproving(job.id); setError('');
+    setApproving(job.id); setConfirmId(null); setError('');
     try {
       await jobsApi.confirm(job.id);
       setJobs((l) => l.filter((j) => j.id !== job.id));
@@ -123,12 +124,27 @@ export default function CompleteRequests() {
             <div className="approve-actions">
               {approvedView && <Pill tone="green">Approved</Pill>}
               <button className="btn ghost" onClick={() => navigate(`/jobs/${job.id}`)}>Open full detail</button>
-              {!approvedView && (
-                <button className="btn primary" disabled={approving === job.id} onClick={() => approve(job)}>
-                  <Svg d="M20 6L9 17l-5-5" size={16} /> {approving === job.id ? 'Approving…' : 'Approve completion'}
+              {!approvedView && confirmId !== job.id && (
+                <button className="btn primary" onClick={() => setConfirmId(job.id)}>
+                  <Svg d="M20 6L9 17l-5-5" size={16} /> Approve completion
                 </button>
               )}
             </div>
+
+            {!approvedView && confirmId === job.id && (
+              <motion.div className="approve-confirm" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}>
+                <span className="ac-note">
+                  <Svg d={ICONS.inbox} size={16} />
+                  Mark <b>{job.agreement_no}</b> complete? The customer will be notified — this can't be undone.
+                </span>
+                <div className="ac-btns">
+                  <button className="btn ghost" disabled={approving === job.id} onClick={() => setConfirmId(null)}>Not yet</button>
+                  <button className="btn primary" disabled={approving === job.id} onClick={() => approve(job)}>
+                    <Svg d="M20 6L9 17l-5-5" size={16} /> {approving === job.id ? 'Approving…' : 'Yes, approve'}
+                  </button>
+                </div>
+              </motion.div>
+            )}
           </motion.div>
         ))}
       </motion.div>
