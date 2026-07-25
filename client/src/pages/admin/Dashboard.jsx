@@ -73,9 +73,12 @@ export default function Dashboard() {
           return (
             <motion.button key={s.key} type="button" className={`kpi-tile tone-${s.tone}${highlight ? ' attention' : ''}`}
               variants={listItem} whileHover={{ y: -3 }} whileTap={{ scale: 0.98 }} onClick={() => navigate(s.to)}>
-              <span className={`kpi-icon tone-${s.tone}`}><Svg d={s.icon} size={18} /></span>
-              <span className="kpi-num">{val ?? '—'}</span>
-              <span className="kpi-label">{s.label}</span>
+              <span className={`kpi-icon tone-${s.tone}`}><Svg d={s.icon} size={20} /></span>
+              <span className="kpi-body">
+                <span className="kpi-num">{val ?? '—'}</span>
+                <span className="kpi-label">{s.label}</span>
+              </span>
+              <span className="kpi-go" aria-hidden="true"><Svg d={CHEVRON_R} size={15} /></span>
             </motion.button>
           );
         })}

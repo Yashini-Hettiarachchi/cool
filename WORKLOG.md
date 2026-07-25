@@ -186,5 +186,10 @@ A technician can now log in on a phone, see today's assigned jobs, search any jo
 - **Installed Vercel skills** into `~/.claude/skills`: web-design-guidelines, react-best-practices, composition-patterns, writing-guidelines.
 - **Still TODO for Phase 5:** confirmation should fire the Completion SMS (Text.lk) + log to `sms_logs`; reminder cron.
 
+### Approvals refinements (client feedback, 2026-07-24)
+- **Sidebar notification badge** — the "Approvals" nav item shows a live count of pending completions so the office doesn't have to keep opening the page. `Sidebar.jsx` polls `GET /api/jobs/stats` (`pendingApprovals`) on a light interval and also refreshes instantly when an approval happens on the page (custom `approvals-changed` window event). Office roles only; `.nav-badge` styling added.
+- **In-window photo lightbox** — approval photos now open in a `components/Lightbox.jsx` popup (backdrop, prev/next arrows + keyboard ←/→, Esc/click-out to close) instead of opening a new browser tab. Wired into the Approvals photo grid.
+- **Approved-jobs history** — Approvals screen gained **Pending / Approved** tabs. Backend generalised: `JobModel.listCompletions(confirmed)` + `GET /api/jobs/complete-requests?status=approved` returns already-confirmed completions (photo_count included); pending is the default. Verified both filters respond correctly; build OK.
+
 ### Next steps (Phase 5 remainder)
 Job completion approval workflow (admin confirms queued completions → finalize + loyalty/SMS) and renewals — see [plans/](docs/plans/).

@@ -18,6 +18,9 @@ Legend: `[ ]` to do · `[~]` partially done · `[x]` done
 - [x] **Assignments board** (`/assignments`) — one list of upcoming visits, Unassigned/All filter, **inline technician dropdown** so admin/system-user can assign without opening the calendar
 - [x] **Reusable pagination** across Customers/Assignments/Cancellations/Deleted Jobs/Users/Dashboard; SVG-chevron buttons; centered layout fix; **dashboard redesign** (light hero, KPI reorder, 2-column)
 - [x] **Completion Approvals screen** (`/complete-requests`) — admin reviews technician photos & approves (`PATCH /jobs/:id/confirm`); technician can now see their own uploaded photos
+- [x] **Sidebar "Approvals" notification badge** — live pending count (polls `/jobs/stats` + refreshes instantly on approve via an `approvals-changed` event)
+- [x] **Photo lightbox** — approval photos open in an in-window popup (prev/next, Esc/click-out) instead of a new browser tab
+- [x] **Approved-jobs history** — Approvals screen has **Pending / Approved** tabs (`GET /jobs/complete-requests?status=approved`) so already-confirmed completions stay trackable
 - [x] Fixed blank job-detail pages and the Assignments missing-icon
 
 ---
