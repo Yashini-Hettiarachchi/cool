@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { jobsApi } from '../../api/jobs.api';
-import { PageHeader, EmptyState, rowContainer, rowItem } from '../../components/ui';
+import { PageHeader, EmptyState, Alert, rowContainer, rowItem } from '../../components/ui';
 import Pagination, { paginate } from '../../components/Pagination';
 
 export default function DeletedJobs() {
@@ -18,7 +18,7 @@ export default function DeletedJobs() {
     <div className="card">
       <PageHeader icon="trash" title="Deleted Jobs"
         subtitle="Jobs removed as mistake corrections (soft-deleted). Distinct from cancellations." />
-      {error && <p className="error">{error}</p>}
+      <Alert tone="error">{error}</Alert>
 
       {loaded && jobs.length === 0 && !error ? (
         <EmptyState icon="trash" title="No deleted jobs"

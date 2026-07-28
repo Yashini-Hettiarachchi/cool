@@ -97,7 +97,7 @@ export default function TodayJobs() {
       )}
 
       {loading && <div className="card muted" style={{ textAlign: 'center' }}>Loading your jobs…</div>}
-      {error && <div className="alert error">{error}</div>}
+      {error && <div className="alert error" role="alert">{error}</div>}
 
       {!loading && !error && jobs.length === 0 && (
         <EmptyState icon="calendar" title="No jobs assigned yet"

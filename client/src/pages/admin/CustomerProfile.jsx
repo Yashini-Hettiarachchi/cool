@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { customersApi } from '../../api/customers.api';
 import { listItem, listContainer, tap, motionTokens } from '../../lib/motion';
-import { Svg, ICONS, Avatar, EmptyState, rowContainer, rowItem } from '../../components/ui';
+import { Svg, ICONS, Avatar, EmptyState, Alert, rowContainer, rowItem } from '../../components/ui';
 
 export default function CustomerProfile() {
   const { id } = useParams();
@@ -15,7 +15,7 @@ export default function CustomerProfile() {
     customersApi.profile(id).then(setData).catch((e) => setError(e.message));
   }, [id]);
 
-  if (error) return <div className="card"><p className="error">{error}</p></div>;
+  if (error) return <div className="card"><Alert tone="error">{error}</Alert></div>;
   if (!data) return <div className="card"><p className="muted">Loading…</p></div>;
 
   const { customer, acUnits, agreements } = data;

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { jobsApi } from '../../api/jobs.api';
-import { PageHeader, EmptyState, Pill, Svg, ICONS, rowContainer, rowItem } from '../../components/ui';
+import { PageHeader, EmptyState, Pill, Svg, ICONS, Alert, rowContainer, rowItem } from '../../components/ui';
 import Pagination, { paginate } from '../../components/Pagination';
 
 const fmt = (d) => {
@@ -71,7 +71,7 @@ export default function Assignments() {
         </button>
       </div>
 
-      {error && <p className="error">{error}</p>}
+      <Alert tone="error">{error}</Alert>
 
       {!busy && shown.length === 0 && (
         <EmptyState icon="calendar"

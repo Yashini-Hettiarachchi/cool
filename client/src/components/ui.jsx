@@ -27,6 +27,10 @@ export const ICONS = {
   arrow: 'M5 12h14M12 5l7 7-7 7',
   ac: 'M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9L4.9 19.1',
   jobs: 'M20 7h-3V4a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v3H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM9 4h6v3H9z',
+  /* Used by <Alert>. Colour alone can't carry "this failed" vs "this worked"
+     (WCAG: never convey meaning by colour only), so each tone gets a glyph. */
+  alert: 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01',
+  check: 'M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3',
 };
 
 export const Svg = ({ d, size = 18 }) => (
@@ -82,6 +86,34 @@ export function Avatar({ name = '', size = 36 }) {
 /* Pill for roles / plain labels */
 export function Pill({ children, tone }) {
   return <span className={`pill${tone ? ` tone-${tone}` : ''}`}>{children}</span>;
+}
+
+/**
+ * Inline feedback banner.
+ *
+ * Replaces the bare `<p className="error">` used across the admin pages, which
+ * rendered as 14px red text with no icon and nothing to announce it: easy to miss
+ * next to a full-width form, and invisible to a screen reader. The technician
+ * pages already used the `.alert` banner, so this also settles the two-styles
+ * inconsistency in favour of the more legible one.
+ *
+ * tone="error" carries role="alert" (interrupt: something failed and needs
+ * attention). tone="ok" carries role="status" (polite: confirmation only).
+ */
+export function Alert({ tone = 'error', children }) {
+  if (!children) return null;
+  const isError = tone === 'error';
+  return (
+    <motion.p
+      className={`alert ${isError ? 'error' : 'ok'}`}
+      role={isError ? 'alert' : 'status'}
+      initial={{ opacity: 0, y: -4 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
+      <Svg d={isError ? ICONS.alert : ICONS.check} size={16} />
+      <span>{children}</span>
+    </motion.p>
+  );
 }
 
 /* Motion helpers for lists/table bodies */

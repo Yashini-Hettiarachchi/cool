@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { usersApi } from '../../api/users.api';
 import { tap } from '../../lib/motion';
-import { PageHeader, Avatar, Pill, EmptyState, rowContainer, rowItem } from '../../components/ui';
+import { PageHeader, Avatar, Pill, EmptyState, Alert, rowContainer, rowItem } from '../../components/ui';
 import Pagination, { paginate } from '../../components/Pagination';
 
 const ROLE_LABEL = { admin: 'Admin', system_user: 'System User', technician: 'Technician' };
@@ -117,8 +117,8 @@ export default function AddUsers() {
           />
         </label>
 
-        {error && <p className="error">{error}</p>}
-        {notice && <p className="notice">{notice}</p>}
+        <Alert tone="error">{error}</Alert>
+        <Alert tone="ok">{notice}</Alert>
 
         <div className="form-actions">
           <motion.button {...tap} type="submit" disabled={busy}>

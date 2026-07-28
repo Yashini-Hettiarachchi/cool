@@ -101,7 +101,20 @@ export default function Sidebar({ open, onNavigate }) {
               >
                 <Icon d={ICONS[it.icon]} />
                 <span>{it.name}</span>
-                {badges[it.to] > 0 && <span className="nav-badge">{badges[it.to]}</span>}
+                {/* The bare number reads as "Approvals 3" to a screen reader, which is
+                    ambiguous. aria-label names what the count means; the visible glyph
+                    stays a clean number. aria-live so a poll that raises the count is
+                    announced without stealing focus. */}
+                {badges[it.to] > 0 && (
+                  <span
+                    className="nav-badge"
+                    role="status"
+                    aria-live="polite"
+                    aria-label={`${badges[it.to]} pending`}
+                  >
+                    {badges[it.to]}
+                  </span>
+                )}
               </NavLink>
             ))}
           </div>

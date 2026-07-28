@@ -53,7 +53,7 @@ export default function JobSearch() {
         </button>
       </form>
 
-      {error && <div className="alert error">{error}</div>}
+      {error && <div className="alert error" role="alert">{error}</div>}
 
       {jobs === null && !loading && (
         <EmptyState icon="search" title="Search for a job" hint="Type an AS- number and tap Search to see its visits." />

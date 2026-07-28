@@ -5,7 +5,7 @@ import { agreementsApi } from '../../api/agreements.api';
 import { customersApi } from '../../api/customers.api';
 import { pricingApi } from '../../api/pricing.api';
 import { tap, motionTokens } from '../../lib/motion';
-import { Svg, ICONS } from '../../components/ui';
+import { Svg, ICONS, Alert } from '../../components/ui';
 
 const PERIODS = [
   { d: 30, label: 'Monthly' },
@@ -230,7 +230,7 @@ export default function NewAgreement() {
           </span>
         </div>
 
-        {error && <p className="error">{error}</p>}
+        <Alert tone="error">{error}</Alert>
 
         <div className="form-bar">
           <motion.button type="button" {...tap} className="secondary" onClick={() => navigate('/customers')}>Cancel</motion.button>

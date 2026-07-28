@@ -78,7 +78,10 @@ export default function Login() {
               <span className="field-label">Password</span>
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" placeholder="••••••••" required />
             </label>
-            {error && <p className="error">{error}</p>}
+            {/* role="alert" so a failed sign-in is announced, not just recoloured.
+                Promoted to the .alert banner used everywhere else, since bare 13px
+                red text next to a full-width button was easy to miss entirely. */}
+            {error && <p className="alert error" role="alert" style={{ marginBottom: 4 }}>{error}</p>}
             <motion.button type="submit" disabled={busy} style={{ width: '100%', marginTop: 8 }}
               whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}>
               {busy ? 'Signing in…' : 'Sign in'}

@@ -6,6 +6,35 @@ Legend: `[ ]` to do · `[~]` partially done · `[x]` done
 
 ---
 
+## Where we are — 2026-07-28
+
+**The core business loop is complete and live-verified:** register a customer → auto-generate their year of visits → assign a technician → technician works the job on their phone with photos → office reviews and approves → customer is notified.
+
+| Phase | State |
+|---|---|
+| 1 — Setup, DB, auth, users, pricing | ✅ verified |
+| 2 — Customers & agreements (AS- numbering, auto-scheduling) | ✅ verified |
+| 3 — Calendar, assignment, postpone / cancel / soft-delete | ✅ verified |
+| 4 — Technician mobile module | ✅ verified |
+| 5 — SMS & completion approvals | 🔶 core done; reminder cron + live Text.lk left |
+| 6 — Job card print / PDF | ⬜ not started |
+| 7 — Archive & renewal | ⬜ not started (only the DB column exists) |
+| 8 — Reporting | ⬜ not started |
+| 9 — Deployment | ⬜ not started |
+| 10 — Domain go-live | ⬜ not started |
+
+**~60% of the build**, weighted by effort rather than phase count (1–4 were the bulk; 6 and 8 are small additive screens). **Phase 7 is the only core business logic left** — everything else remaining is a convenience screen or deployment.
+
+### Built but never proven ⚠️
+These read as done but carry real risk, because no one has ever exercised them:
+1. **The `system_user` role** — plumbed through backend and frontend since Phase 1; no account of that role has ever been created or logged in (see the section below).
+2. **Live SMS** — the Text.lk HTTP call has never executed. Log-only mode proves our side, not theirs.
+3. **Nothing has ever run off this machine** — no cPanel deploy, no Passenger, no remote MySQL. Phase 9 is where surprises usually live.
+
+> **Shortest path to a client-visible URL** is arguably **Phase 9 before 6/7/8** — deploy what already works, then keep building against a live environment, rather than hitting every deployment surprise at once later.
+
+---
+
 ## Done (see WORKLOG for detail)
 - [x] **Phase 1** — Project setup, DB schema, auth, Admin user & pricing management
 - [x] **Phase 2** — Customer & agreement registration (AS- numbering, auto-scheduled jobs)
@@ -41,7 +70,7 @@ The `system_user` role is **plumbed in but never verified end-to-end** — no ac
 - [x] Admin can create a System User account (AddUsers → role dropdown)
 - [x] Frontend routes/sidebar treat `system_user` as office (no Users/Pricing nav)
 - [ ] **Verify a System User end-to-end** — log in as a `system_user`, confirm access to Customers / New Agreement / Calendar / Jobs / Cancellations / Deleted Jobs, and confirm they are **blocked (403)** from `/api/users` and `/api/pricing` and don't see those nav items. *Blocked on the item below: no `system_user` account exists to test with.*
-- [x] **Completion approval queue** — built (`/complete-requests`); admin/system_user reviews photos & confirms. *(SMS-on-confirm still pending — see Phase 5.)*
+- [x] **Completion approval queue** — built (`/complete-requests`); admin/system_user reviews photos & confirms, and approval now fires the customer's completion SMS (2026-07-28).
 - [ ] Seed or document a default System User login for testing (only `admin` + technicians exist today)
 
 ---

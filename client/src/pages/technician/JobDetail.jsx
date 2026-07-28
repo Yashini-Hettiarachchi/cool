@@ -112,7 +112,7 @@ export default function JobDetail() {
   }
 
   if (loading) return <div className="card muted" style={{ textAlign: 'center' }}>Loading job…</div>;
-  if (error && !job) return <div className="alert error">{error}</div>;
+  if (error && !job) return <div className="alert error" role="alert">{error}</div>;
   if (!job) return null;
 
   const done = job.status === 'completed';

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { customersApi } from '../../api/customers.api';
 import { tap } from '../../lib/motion';
-import { PageHeader, EmptyState, Avatar, Pill, Svg, ICONS, rowContainer, rowItem } from '../../components/ui';
+import { PageHeader, EmptyState, Avatar, Pill, Svg, ICONS, Alert, rowContainer, rowItem } from '../../components/ui';
 import Pagination, { paginate } from '../../components/Pagination';
 
 const PER_PAGE = 15;
@@ -82,7 +82,7 @@ export default function CustomerSearch() {
         )}
       </form>
 
-      {error && <p className="error">{error}</p>}
+      <Alert tone="error">{error}</Alert>
 
       {!busy && count === 0 && mode === 'all' && !error && (
         <EmptyState icon="customers" title="No customers yet"

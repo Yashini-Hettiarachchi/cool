@@ -72,7 +72,9 @@ a { color: var(--brand); text-decoration: none; }
 .notice { color: var(--ok); font-size: 14px; }
 
 /* ---------- App shell ---------- */
-.app-shell { display: flex; min-height: 100vh; }
+/* dvh, not vh: on mobile Safari/Chrome the address bar makes 100vh taller than
+   the visible viewport, which pushes the layout down and causes a jump on scroll. */
+.app-shell { display: flex; min-height: 100dvh; }
 
 .sidebar {
   width: var(--sidebar-w);
@@ -336,7 +338,7 @@ input, select { padding: 11px 13px; }
 .as-chip, td:first-child { font-family: var(--font-mono); font-weight: 600; }
 
 /* ---------- Auth (login) ---------- */
-.auth-wrap { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
+.auth-wrap { min-height: 100dvh; display: grid; grid-template-columns: 1.1fr 1fr; }
 .auth-hero {
   background: linear-gradient(150deg, #17181c 0%, #26141a 55%, var(--brand-ink) 130%);
   color: #fff; padding: 56px; display: flex; flex-direction: column; justify-content: space-between;
@@ -414,7 +416,7 @@ input, select { padding: 11px 13px; }
 
 /* ---------- Calendar ---------- */
 /* Two-column: grid + side panel; whole area fits the viewport (no page scroll). */
-.cal-layout { display: grid; grid-template-columns: 1fr 300px; gap: 18px; height: calc(100vh - 62px - 52px); }
+.cal-layout { display: grid; grid-template-columns: 1fr 300px; gap: 18px; height: calc(100dvh - 62px - 52px); }
 .cal-side { display: flex; flex-direction: column; gap: 14px; min-height: 0; overflow-y: auto; }
 .cal-side .card { margin-bottom: 0; padding: 18px; }
 .side-label { font-size: 10.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); margin-bottom: 12px; }
@@ -661,7 +663,7 @@ input, select { padding: 11px 13px; }
 @media (max-width: 960px) {
   .dash-grid { grid-template-columns: 1fr; }
   .cal-layout { grid-template-columns: 1fr; height: auto; }
-  .cal-card { height: calc(100vh - 62px - 52px); }
+  .cal-card { height: calc(100dvh - 62px - 52px); }
   .cal-side { display: none; }
   .info-grid { grid-template-columns: repeat(2, 1fr); }
   .action-groups { grid-template-columns: 1fr; }
@@ -776,8 +778,11 @@ input, select { padding: 11px 13px; }
 .btn.block { width: 100%; justify-content: center; }
 .btn.sm { padding: 5px 12px; font-size: 13px; }
 
-/* Alerts (banner style for mobile) */
-.alert { border-radius: 10px; padding: 11px 14px; font-size: 14px; font-weight: 500; }
+/* Alerts (banner style, used app-wide via <Alert>) */
+.alert { border-radius: 10px; padding: 11px 14px; font-size: 14px; font-weight: 500;
+  display: flex; align-items: flex-start; gap: 9px; margin: 0 0 14px; }
+.alert > svg { flex-shrink: 0; margin-top: 1px; }   /* optical: align glyph to cap height, not line box */
+.alert > span { min-width: 0; }
 .alert.error { background: #fdeaee; color: var(--danger); border: 1px solid #f5c6ce; }
 .alert.ok { background: #e6f5ee; color: var(--st-completed); border: 1px solid #bfe6d3; }
 
@@ -869,8 +874,10 @@ input, select { padding: 11px 13px; }
 .kpi-body { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .kpi-num { font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 27px; font-weight: 700; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
 .kpi-label { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 5px; line-height: 1.2; }
-.kpi-go { color: var(--faint); flex-shrink: 0; opacity: 0; transition: opacity .18s ease, transform .18s ease; transform: translateX(-4px); }
-.kpi-tile:hover .kpi-go { opacity: 1; transform: translateX(0); }
+/* Faint at rest rather than invisible: a hover-only affordance never appears on a
+   touch screen, so the tile would read as static text to every tablet user. */
+.kpi-go { color: var(--faint); flex-shrink: 0; opacity: .45; transition: opacity .18s ease, transform .18s ease; transform: translateX(-3px); }
+.kpi-tile:hover .kpi-go, .kpi-tile:focus-visible .kpi-go { opacity: 1; transform: translateX(0); }
 .kpi-tile.attention { border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand) inset, var(--shadow-sm); background: #fff6f7; }
 .kpi-tile.attention .kpi-num { color: var(--brand); }
 .kpi-icon.tone-brand { background: var(--brand-tint); color: var(--brand); }
@@ -878,6 +885,101 @@ input, select { padding: 11px 13px; }
 .kpi-icon.tone-amber { background: #fdf1e0; color: var(--st-postponed); }
 .kpi-icon.tone-green { background: #e6f5ee; color: var(--st-completed); }
 .kpi-icon.tone-pink { background: #fdeaee; color: var(--st-scheduled); }
+
+/* ============================================================
+   Polish + accessibility pass
+   Cross-cutting rules. Deliberately last in the file so they apply on top of
+   the component blocks above without needing !important anywhere.
+   ============================================================ */
+
+/* ---- Hit areas ----
+   The small text actions (View / Edit / Deactivate, pagination arrows, .btn.sm)
+   render 26-30px tall, well under the 44px minimum. Growing the padding would
+   break the table rhythm, so the TARGET grows instead of the visual: a
+   transparent pseudo-element centred on the control absorbs the near-misses.
+   Nothing shifts on screen; a mis-tap becomes a hit. */
+button.link, .btn.sm, .pg-nav, .pg-num, .photo-thumb, .icon-btn, .lb-close, .lb-nav {
+  position: relative;
+}
+/* Growth is VERTICAL only by default. Inline actions sit shoulder to shoulder in
+   a table row, and a wider target would overlap its neighbour and steal the tap,
+   which is worse than the small target it fixed. Height is where the shortfall
+   actually is (26px vs 44px), so height is what grows. */
+button.link::after, .btn.sm::after, .pg-num::after {
+  content: "";
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  height: 100%; min-height: 44px;
+}
+/* Standalone icon buttons have no inline neighbour, so both axes can grow. */
+.pg-nav::after, .icon-btn::after, .lb-close::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%; height: 100%;
+  min-width: 44px; min-height: 44px;
+}
+
+/* ---- Text wrapping ----
+   `balance` evens out short headings so a title never leaves one orphan word on
+   its own line. `pretty` does the same for the last line of supporting copy.
+   Not applied to tables or mono text, where predictable line breaks matter. */
+h1, h2, h3, .fs-head h2, .card-title h2, .ph-title, .tjob-name { text-wrap: balance; }
+p, .muted, .hint, .field .hint, .empty-state p, .fs-head p { text-wrap: pretty; }
+
+/* ---- Numerals ----
+   Proportional digits change width as values change, so a polling count (the
+   approvals badge, live KPIs) visibly jitters. Tabular figures hold the column. */
+.count, .nav-badge, .tfilter-count, .photo-count, .pg-range,
+.table td, .chip, .as-chip, .kpi-num, .tstat-num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Images ----
+   A neutral inset hairline so an uploaded photo with pale edges still reads as a
+   bounded object instead of bleeding into the card. Inset so it never adds size. */
+.photo-thumb img, .lb-img {
+  outline: 1px solid rgba(16, 24, 40, .10);
+  outline-offset: -1px;
+}
+
+/* ---- Focus ----
+   Broadened from the original selector list: every element that became
+   interactive since then (tiles, chips, thumbnails, textareas) needs the ring
+   too, or keyboard users lose their place. */
+textarea:focus-visible, .kpi-tile:focus-visible, .tstat:focus-visible,
+.tjob-card:focus-visible, .tfilter-chip:focus-visible, .photo-thumb:focus-visible,
+.photo-add:focus-visible, .pg-num:focus-visible, .pg-nav:focus-visible,
+.seg button:focus-visible, .table tbody tr.clickable:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* ---- Press feedback ----
+   Surfaces that act as buttons should acknowledge the press. Kept at 0.985 so it
+   reads as a firm push rather than a bounce on a large card. */
+.tjob-card:active, .kpi-tile:active, .quick-card:active { transform: scale(.985); }
+
+/* ---- Textarea parity ----
+   Textareas were inheriting none of the input styling, so the comment box looked
+   like an unstyled browser control next to the polished inputs beside it. */
+textarea {
+  display: block; width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+  font-size: 14px; font-family: var(--font-body); color: var(--ink);
+  background: var(--surface); line-height: 1.5;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+textarea:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-tint); }
+textarea::placeholder { color: var(--faint); }
+
+@media (prefers-reduced-motion: reduce) {
+  .tjob-card:active, .kpi-tile:active, .quick-card:active { transform: none; }
+}
 
 .dash-cols { display: grid; grid-template-columns: 1.7fr 1fr; gap: 18px; align-items: start; }
 .quick-panel .section-h { margin: 0 0 14px; }

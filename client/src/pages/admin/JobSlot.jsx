@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { jobsApi } from '../../api/jobs.api';
+import { Alert } from '../../components/ui';
 import { listContainer, listItem, tap, motionTokens } from '../../lib/motion';
 
 /* ---- inline icon set (paths split on "M" by <Svg>) ---- */
@@ -49,7 +50,7 @@ export default function JobSlot() {
     finally { setBusy(''); }
   }
 
-  if (error && !job) return <div className="card"><p className="error">{error}</p></div>;
+  if (error && !job) return <div className="card"><Alert tone="error">{error}</Alert></div>;
   if (!job) return <div className="card"><p className="muted">Loading…</p></div>;
 
   const fields = [
@@ -96,8 +97,8 @@ export default function JobSlot() {
         </motion.div>
 
         <AnimatePresence mode="wait">
-          {error && <Alert key="err" kind="error" text={error} />}
-          {notice && <Alert key="ok" kind="notice" text={notice} />}
+          {error && <Alert key="err" tone="error">{error}</Alert>}
+          {notice && <Alert key="ok" tone="ok">{notice}</Alert>}
         </AnimatePresence>
       </motion.div>
 
@@ -146,16 +147,6 @@ const pageStagger = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.08 } },
 };
-
-function Alert({ kind, text }) {
-  return (
-    <motion.p className={kind === 'error' ? 'error alert-line' : 'notice alert-line'}
-      initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
-      transition={{ duration: motionTokens.duration.fast, ease: motionTokens.easing.smooth }}>
-      {text}
-    </motion.p>
-  );
-}
 
 function ActionGroup({ icon, title, desc, tone, children }) {
   return (

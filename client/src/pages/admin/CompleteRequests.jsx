@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { jobsApi } from '../../api/jobs.api';
-import { PageHeader, EmptyState, Pill, Avatar, Svg, ICONS, rowContainer, rowItem } from '../../components/ui';
+import { PageHeader, EmptyState, Pill, Avatar, Svg, ICONS, Alert, rowContainer, rowItem } from '../../components/ui';
 import Lightbox from '../../components/Lightbox';
 
 /**
@@ -95,10 +95,12 @@ export default function CompleteRequests() {
 
       <AnimatePresence>
         {done && (
-          <motion.p className="alert ok" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>{done}</motion.p>
+          /* role="status" not "alert": a successful approval is confirmation, not an
+             interruption, so it is announced politely without stealing focus. */
+          <motion.p className="alert ok" role="status" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>{done}</motion.p>
         )}
       </AnimatePresence>
-      {error && <p className="error">{error}</p>}
+      <Alert tone="error">{error}</Alert>
 
       {!busy && jobs.length === 0 && !error && (
         approvedView
