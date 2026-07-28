@@ -23,7 +23,7 @@ export default function TechJobCard({ job, variants }) {
   return (
     <motion.button
       type="button"
-      className="tjob-card"
+      className={`tjob-card ${statusClass(job.status)}`}
       variants={variants}
       whileTap={{ scale: 0.98 }}
       onClick={() => nav(`/technician/jobs/${job.id}`)}

@@ -23,6 +23,15 @@ Legend: `[ ]` to do · `[~]` partially done · `[x]` done
 - [x] **Approved-jobs history** — Approvals screen has **Pending / Approved** tabs (`GET /jobs/complete-requests?status=approved`) so already-confirmed completions stay trackable
 - [x] Fixed blank job-detail pages and the Assignments missing-icon
 
+### UI/UX polish pass (client feedback, 2026-07-26)
+- [x] **Approvals two-step confirm** — Approve now asks for inline confirmation (names the agreement, warns it notifies the customer) so it can't be misfired
+- [x] **New Agreement live payment check** — pink/green feedback when amount paid is short of / matches the agreed price
+- [x] **Calendar legend** — added the missing `in_progress` status key
+- [x] **Technician "My Jobs" shows all assigned jobs by default** (`GET /api/jobs/mine`), with All/Today/To do/Done filters + tonal KPI strip
+- [x] **Technician surface uses full width** (was a 640px column) — responsive job-card grid, status accent stripes, two-column Job Detail work order, phone-down responsive rules
+- [x] Fixed the leaking native "Choose Files" input (global `[hidden]` reset); made the photo **Add** tile interactive
+- [ ] **Commit a checkpoint** — ~40 files changed this session are still uncommitted; repo not yet `git init`-ed ⚠️
+
 ---
 
 ## Roles — System User (office staff) ⚠️

@@ -118,22 +118,39 @@ export default function JobDetail() {
   const done = job.status === 'completed';
   const started = job.status === 'in_progress';
 
+  const photosCard = (
+    <div className="card tech-photos">
+      <div className="tech-block-head">
+        <span><Svg d={ICONS.file} size={16} /> {done ? 'Photos' : 'Photos of the work'}</span>
+        <span className="photo-count">{done ? photos.length : `${photos.length} / 5`}</span>
+      </div>
+      {!done && <p className="muted" style={{ margin: '0 0 10px', fontSize: 12 }}>Add up to 5 photos of the work.</p>}
+      {done && photos.length === 0
+        ? <p className="muted" style={{ margin: '4px 0 0', fontSize: 13 }}>No photos were uploaded for this visit.</p>
+        : (
+          <div className="photo-grid">
+            {photos.map((p) => (
+              <div className="photo-thumb" key={p.id}>
+                {urls[p.id] ? <img src={urls[p.id]} alt="job" /> : <span className="photo-loading" />}
+              </div>
+            ))}
+            {!done && photos.length < 5 && (
+              <button type="button" className="photo-add" onClick={() => fileRef.current?.click()} disabled={busy === 'upload'}>
+                <Svg d="M12 5v14M5 12h14" size={22} />
+                <span>{busy === 'upload' ? 'Uploading…' : 'Add'}</span>
+              </button>
+            )}
+          </div>
+        )}
+      <input ref={fileRef} type="file" accept="image/*" capture="environment" multiple hidden onChange={onFiles} />
+    </div>
+  );
+
   return (
     <div className="tech-wrap tech-detail">
       <button className="btn ghost tech-back" onClick={() => nav(-1)}>
-        <Svg d={ICONS.arrow} size={16} /> <span style={{ transform: 'scaleX(-1)', display: 'inline-block' }}>←</span> Back
+        <Svg d="M15 18l-6-6 6-6" size={16} /> Back
       </button>
-
-      <div className="card tech-detail-head">
-        <div className="tjob-top">
-          <span className="tjob-as">{job.agreement_no}</span>
-          <span className={`badge-soft ${statusClass(job.status)}`}>{statusLabel(job.status)}</span>
-        </div>
-        <h1 style={{ margin: '6px 0 2px', fontSize: 22 }}>{job.customer_name}</h1>
-        <p className="muted" style={{ margin: 0, fontSize: 13 }}>
-          <Svg d={ICONS.calendar} size={13} /> {shortDate(job.scheduled_date)}
-        </p>
-      </div>
 
       <AnimatePresence>
         {(notice || error) && (
@@ -144,119 +161,86 @@ export default function JobDetail() {
         )}
       </AnimatePresence>
 
-      {/* Customer / site info */}
-      <div className="info-grid tech-info">
-        {INFO.map((f) => job[f.key] && (
-          <div className="info-tile" key={f.key}>
-            <span className="info-ico"><Svg d={ICONS[f.icon]} size={16} /></span>
-            <div className="info-body">
-              <span className="info-label">{f.label}</span>
-              <span className="info-value">{job[f.key]}</span>
+      <div className="tech-detail-grid">
+        {/* Left — the work order */}
+        <div className="tdg-main">
+          <div className="card tech-detail-head">
+            <div className="tjob-top">
+              <span className="tjob-as">{job.agreement_no}</span>
+              <span className={`badge-soft ${statusClass(job.status)}`}>{statusLabel(job.status)}</span>
+            </div>
+            <h1 style={{ margin: '8px 0 2px', fontSize: 22 }}>{job.customer_name}</h1>
+            <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+              <Svg d={ICONS.calendar} size={13} /> {shortDate(job.scheduled_date)}
+            </p>
+          </div>
+
+          <div className="info-grid tech-info">
+            {INFO.map((f) => job[f.key] && (
+              <div className="info-tile" key={f.key}>
+                <span className="info-ico"><Svg d={ICONS[f.icon]} size={16} /></span>
+                <div className="info-body">
+                  <span className="info-label">{f.label}</span>
+                  <span className="info-value">{job[f.key]}</span>
+                </div>
+              </div>
+            ))}
+            <div className="info-tile">
+              <span className="info-ico"><Svg d={ICONS.ac} size={16} /></span>
+              <div className="info-body">
+                <span className="info-label">AC Unit</span>
+                <span className="info-value">{[job.brand, job.model].filter(Boolean).join(' ') || '—'}</span>
+              </div>
             </div>
           </div>
-        ))}
-        <div className="info-tile">
-          <span className="info-ico"><Svg d={ICONS.ac} size={16} /></span>
-          <div className="info-body">
-            <span className="info-label">AC Unit</span>
-            <span className="info-value">{[job.brand, job.model].filter(Boolean).join(' ') || '—'}</span>
-          </div>
+
+          {photosCard}
         </div>
-      </div>
 
-      {done ? (
-        <>
-          <div className="card tech-complete-card">
-            <span className="tc-ico"><Svg d={ICONS.star} size={22} /></span>
-            <div>
-              <strong>Completed</strong>
-              <p className="muted" style={{ margin: '2px 0 0', fontSize: 13 }}>
-                Logged as {job.service_type_used === 'hp' ? 'H/P' : 'Normal'} service · awaiting admin approval.
-              </p>
+        {/* Right — actions (sticky on desktop) */}
+        <aside className="tdg-side">
+          {done ? (
+            <div className="card tech-complete-card">
+              <span className="tc-ico"><Svg d={ICONS.star} size={22} /></span>
+              <div>
+                <strong>Completed</strong>
+                <p className="muted" style={{ margin: '2px 0 0', fontSize: 13 }}>
+                  Logged as {job.service_type_used === 'hp' ? 'H/P' : 'Normal'} service · awaiting admin approval.
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="card tech-photos">
-            <div className="tech-block-head">
-              <span><Svg d={ICONS.file} size={16} /> Your photos</span>
-              <span className="photo-count">{photos.length}</span>
-            </div>
-            {photos.length === 0
-              ? <p className="muted" style={{ margin: '4px 0 0', fontSize: 13 }}>No photos were uploaded for this visit.</p>
-              : (
-                <div className="photo-grid">
-                  {photos.map((p) => (
-                    <div className="photo-thumb" key={p.id}>
-                      {urls[p.id] ? <img src={urls[p.id]} alt="job" /> : <span className="photo-loading" />}
-                    </div>
-                  ))}
-                </div>
-              )}
-          </div>
-        </>
-      ) : (
-        <>
-          {/* Start */}
-          {!started && (
-            <button className="btn primary block" onClick={start} disabled={busy === 'start'}>
-              <Svg d={ICONS.wrench} size={16} /> {busy === 'start' ? 'Starting…' : 'Start this job'}
-            </button>
-          )}
-
-          {/* Photos */}
-          <div className="card tech-photos">
-            <div className="tech-block-head">
-              <span><Svg d={ICONS.file} size={16} /> Photos</span>
-              <span className={`photo-count ${photos.length >= 4 ? 'good' : ''}`}>{photos.length} / 5</span>
-            </div>
-            <p className="muted" style={{ margin: '0 0 10px', fontSize: 12 }}>Add up to 5 photos of the work.</p>
-
-            <div className="photo-grid">
-              {photos.map((p) => (
-                <div className="photo-thumb" key={p.id}>
-                  {urls[p.id]
-                    ? <img src={urls[p.id]} alt="job" />
-                    : <span className="photo-loading" />}
-                </div>
-              ))}
-              {photos.length < 5 && (
-                <button type="button" className="photo-add" onClick={() => fileRef.current?.click()} disabled={busy === 'upload'}>
-                  <Svg d={ICONS.add || 'M12 5v14M5 12h14'} size={22} />
-                  <span>{busy === 'upload' ? 'Uploading…' : 'Add'}</span>
+          ) : (
+            <div className="card tech-action-card">
+              {!started && (
+                <button className="btn primary block" onClick={start} disabled={busy === 'start'}>
+                  <Svg d={ICONS.wrench} size={16} /> {busy === 'start' ? 'Starting…' : 'Start this job'}
                 </button>
               )}
-            </div>
-            <input ref={fileRef} type="file" accept="image/*" capture="environment" multiple hidden onChange={onFiles} />
-          </div>
 
-          {/* Service type */}
-          <div className="card">
-            <div className="tech-block-head"><span><Svg d={ICONS.tag} size={16} /> Service type</span></div>
-            <div className="seg">
-              <button type="button" className={`seg-opt ${serviceType === 'normal' ? 'active' : ''}`} onClick={() => setServiceType('normal')}>Normal</button>
-              <button type="button" className={`seg-opt ${serviceType === 'hp' ? 'active' : ''}`} onClick={() => setServiceType('hp')}>H/P</button>
-            </div>
-          </div>
+              <div className="tech-block-head" style={{ marginTop: started ? 0 : 4 }}>
+                <span><Svg d={ICONS.tag} size={16} /> Service type</span>
+              </div>
+              <div className="seg">
+                <button type="button" className={`seg-opt ${serviceType === 'normal' ? 'active' : ''}`} onClick={() => setServiceType('normal')}>Normal</button>
+                <button type="button" className={`seg-opt ${serviceType === 'hp' ? 'active' : ''}`} onClick={() => setServiceType('hp')}>H/P</button>
+              </div>
 
-          {/* Comment */}
-          <div className="card">
-            <div className="tech-block-head">
-              <span><Svg d={ICONS.file} size={16} /> Comment</span>
-              <button className="btn ghost sm" onClick={saveComment} disabled={busy === 'comment'}>
-                {busy === 'comment' ? 'Saving…' : 'Save'}
+              <div className="tech-block-head">
+                <span><Svg d={ICONS.file} size={16} /> Comment</span>
+                <button className="btn ghost sm" onClick={saveComment} disabled={busy === 'comment'}>
+                  {busy === 'comment' ? 'Saving…' : 'Save'}
+                </button>
+              </div>
+              <textarea className="tech-comment" rows={3} value={comment}
+                onChange={(e) => setComment(e.target.value)} placeholder="Notes about the visit (optional)…" />
+
+              <button className="btn primary block tech-complete-btn" onClick={complete} disabled={busy === 'complete'}>
+                <Svg d={ICONS.star} size={16} /> {busy === 'complete' ? 'Completing…' : 'Complete & send for approval'}
               </button>
             </div>
-            <textarea className="tech-comment" rows={3} value={comment}
-              onChange={(e) => setComment(e.target.value)} placeholder="Notes about the visit (optional)…" />
-          </div>
-
-          {/* Complete (sticky) */}
-          <div className="tech-actionbar">
-            <button className="btn primary block" onClick={complete} disabled={busy === 'complete'}>
-              <Svg d={ICONS.star} size={16} /> {busy === 'complete' ? 'Completing…' : 'Complete & send for approval'}
-            </button>
-          </div>
-        </>
-      )}
+          )}
+        </aside>
+      </div>
     </div>
   );
 }

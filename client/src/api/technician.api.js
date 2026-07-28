@@ -4,6 +4,9 @@ export const techApi = {
   /** Today's jobs assigned to the signed-in technician. */
   today: () => api.get('/jobs/mine/today'),
 
+  /** Every visit assigned to the signed-in technician (open first, then done). */
+  mine: () => api.get('/jobs/mine'),
+
   /** All visits under an AS- number. */
   byAgreement: (asNumber) => api.get(`/jobs/by-agreement/${encodeURIComponent(asNumber)}`),
 

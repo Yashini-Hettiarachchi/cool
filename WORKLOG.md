@@ -4,6 +4,39 @@ A running history of what was done, session by session. Newest entries at the to
 
 ---
 
+## 2026-07-26
+
+### Summary
+Interface/UX pass across the **Approvals**, **New Agreement**, **Calendar**, and the whole **technician** surface (design-taste / apple-design / high-end principles applied to product UI). Added a "show all my assigned jobs" technician endpoint, redesigned the technician screens to use the full width, made them responsive, and fixed a leaking native file input. **All work is UI/UX + one small read endpoint — no schema changes. Everything is still uncommitted (repo not yet initialised).**
+
+### Approvals — safer confirm
+- **Two-step inline confirm** on `CompleteRequests.jsx` — "Approve completion" now reveals a calm inline strip naming the exact agreement ("Mark AS-00042 complete? The customer will be notified — this can't be undone.") with **Not yet / Yes, approve**. Prevents accidental one-click approvals on an irreversible, customer-notifying action. No modal; expands in place. New `.approve-confirm` CSS (pink attention wash).
+
+### New Agreement — live payment check
+- Added a non-blocking **payment check** in `NewAgreement.jsx` Service-Plan section: once price + amount-paid are both filled, shows a pink "Amount paid is LKR X short of the agreed price…" or a green "Payment matches the agreed price — good to go." Enforces the form's "enter only after full payment" rule with feedback instead of silence. New `.pay-check` CSS.
+
+### Calendar — legend completeness
+- `LEGEND` in `Calendar.jsx` was missing **`in_progress`** even though the grid colours those jobs — added it (with its live count) so every colour on the grid has a key.
+
+### Technician module — see all assigned jobs + full-width redesign
+- **New endpoint** `GET /api/jobs/mine` → `JobModel.myJobs(techId)` — every non-deleted visit assigned to the caller, **open jobs first (by date), completed/cancelled last**. Scoped to `technician_id`. (`jobs.controller.mine`, route `requireRole('technician','admin','system_user')`, `technician.api.mine()`.)
+- **My Jobs (`TodayJobs.jsx`)** now loads **all assigned jobs by default** (was today-only) and filters client-side: **All / Today / To do / Done** chips + a tappable **tonal KPI strip** (Today=amber, To do=brand, Done=green) with icons, tabular numbers, press feedback, and animated filter cross-fades.
+- **Empty-sides fix** — `.tech-wrap` was pinned to 640px centred (a phone column stranded on desktop). Now full-width: job cards **tile into a responsive grid** (`minmax(min(100%,320px),1fr)`; 3-up desktop → 1-up phone) and carry a **status accent stripe** (scheduled/postponed/completed…) for at-a-glance scanning.
+- **Job Detail (`JobDetail.jsx`)** rebuilt into a **two-column work order** — agreement + site info + photos on the left, a **sticky action panel** (Start → Service type → Notes → Complete) on the right; collapses to one column ≤860px. Unified the photos card across the active/completed states. Fixed the doubled back-arrow glyph.
+- **Find Job (`JobSearch.jsx`)** inherits the full-width grid + status stripes via the shared components.
+
+### Fixes
+- **Leaking native file input** — the raw "Choose Files / No file chosen" control was showing because the global `input{display:block}` rule overrode the `hidden` attribute. Added a `[hidden]{display:none!important}` reset. The intended control (the **"Add" tile**) is now properly interactive: hover firms the dashed border to a solid brand wash, the **+ icon springs/rotates 90°**, press scales down, all under a `prefers-reduced-motion` guard.
+
+### Responsive
+- Technician components made phone-safe: card grid can't overflow a 320px viewport; KPI tiles shrink at ≤680px and **stack (icon over metric) at ≤420px**; filter chips tighten ≤520px. (App shell already collapsed the sidebar to a hamburger at ≤860px.)
+
+### Verified
+- `npm run build` green throughout (CSS ~49 kB). Changed server files (`job.model.js`, `jobs.controller.js`, `jobs.routes.js`) pass `node -c` syntax check.
+- **Not yet verified in a live browser session** by us this pass (user was testing interactively). **Still uncommitted — a checkpoint commit is strongly recommended.**
+
+---
+
 ## 2026-07-22
 
 ### Summary

@@ -121,6 +121,12 @@ const JobsController = {
     catch (err) { next(err); }
   },
 
+  /** GET /api/jobs/mine — every visit assigned to the caller (open first, then done). */
+  async mine(req, res, next) {
+    try { res.json({ jobs: await JobModel.myJobs(req.user.id) }); }
+    catch (err) { next(err); }
+  },
+
   /** GET /api/jobs/by-agreement/:as_number — all visits under an AS-. */
   async byAgreement(req, res, next) {
     try {

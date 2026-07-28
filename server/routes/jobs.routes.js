@@ -26,6 +26,7 @@ router.use(authRequired);
 
 // --- Technician workflow (static paths first) ---
 router.get('/mine/today', requireRole('technician', 'admin', 'system_user'), JobsController.myToday);
+router.get('/mine', requireRole('technician', 'admin', 'system_user'), JobsController.mine);
 router.get('/by-agreement/:as_number', anyRole, JobsController.byAgreement);
 
 // --- Office reads ---

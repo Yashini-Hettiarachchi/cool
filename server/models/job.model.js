@@ -121,6 +121,18 @@ const JobModel = {
     return rows;
   },
 
+  /** Every (non-deleted) visit assigned to a technician — open jobs first, then done. */
+  async myJobs(technicianId) {
+    const [rows] = await pool.query(
+      `${JOB_JOIN}
+        WHERE j.is_deleted = FALSE
+          AND j.technician_id = ?
+        ORDER BY (j.status IN ('completed', 'cancelled')) ASC, j.scheduled_date ASC, j.id`,
+      [technicianId]
+    );
+    return rows;
+  },
+
   /** All (non-deleted) visits under an AS- number — for technician AS- search. */
   async listByAgreementNo(agreementNo) {
     const [rows] = await pool.query(
