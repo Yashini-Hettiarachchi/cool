@@ -2,6 +2,10 @@
 
 All commands are run from the project root: **`d:\Business\Projects\AC-Project`**
 
+> **No Docker on your machine?** Docker only runs the database here, not the app.
+> See **[SETUP-WITHOUT-DOCKER.md](AC-Project/SETUP-WITHOUT-DOCKER.md)** for a full
+> from-scratch setup using a locally installed MySQL instead.
+
 ---
 
 ## 1. Start the database (Docker)
