@@ -4,6 +4,38 @@ A running history of what was done, session by session. Newest entries at the to
 
 ---
 
+## 2026-07-28
+
+### Summary
+Closed the first open item of **Phase 5**: approving a technician's completion now actually notifies the customer. Also hardened the approve endpoint, which previously had no idempotency or state validation at all. Repo was `git init`-ed since the last entry — everything through 2026-07-26 is committed on `main` (HEAD `b600fc7`).
+
+### Completion SMS on confirm ✅
+The `completion` template had existed in `smsService.js` since Phase 2 and was never called — `JobModel.confirm` was a bare `admin_confirmed = TRUE` flip.
+- **Notify on approval, not on the technician's Complete tap.** Approval is the point the work is actually confirmed, so a completion that gets reviewed and rejected never reaches the customer. `jobs.controller.confirm` now renders the `completion` template and records it in `sms_logs` (with `job_id`) via a `notifyCompletion()` helper.
+- **SMS can never fail an approval.** The send + log are wrapped and always resolve to a status; the approval row is already committed before it runs. Same rule as the activation SMS in `agreements.controller` (Phase 2 issue #4). Response carries `{ job, sms }`.
+- **No phone on file** → logged as `skipped-no-phone` rather than silently dropped, so the office can see the customer wasn't notified.
+
+### Approve endpoint hardening (found while wiring the above)
+- **Idempotent approval** — `JobModel.confirm` now guards the UPDATE on `admin_confirmed = FALSE` and returns `{ job, justConfirmed }`. Only a genuine `FALSE→TRUE` transition sends an SMS, so a double-click or retried request can't text the customer twice (`sms:'already-approved'`). The API is reachable independently of the UI's two-step confirm, so this mattered.
+- **State validation** — approving now 404s on a missing job and **422s on a job that isn't `completed`**. Previously it would happily set `admin_confirmed` on a scheduled job.
+
+### Approvals screen
+- The success toast now reports the SMS outcome (`SMS_NOTE` map) — the two-step confirm strip promises "the customer will be notified", so log-only mode, a send failure, or a missing phone now say so instead of a bare "Approved". Toast held 5s (was 3.5s) to fit the extra clause.
+
+### Verified (live, Docker DB + server on :3100)
+- Approve a pending completion → `sms:'logged'`, one new `sms_logs` row (`job_id=18`, correct rendered message), `[sms:log-only]` line in the server log.
+- **Re-approve the same job → `sms:'already-approved'`, no second row.**
+- Non-completed job → **422**, and the job was confirmed *not* flagged. Missing job → **404**.
+- Emptied a customer's phone → `sms:'skipped-no-phone'`, **approval still succeeded** (`admin_confirmed=1`); phone restored afterwards.
+- `npm run build` green (469 modules, CSS 49.29 kB). Changed server files pass `node --check`.
+- **Dev DB left as found** — the two jobs approved during testing were reverted to unconfirmed and the two `sms_logs` rows I created were removed, so the demo Approvals queue still has its 3 pending items.
+
+### Not done / next
+- `SMS_ENABLED=true` against real Text.lk is **still unexercised** — needs `TEXTLK_API_KEY` + `TEXTLK_SENDER_ID`. Everything above ran in log-only mode.
+- Reminder cron (`server/jobs/reminderCron.js` + cPanel entry) not started.
+
+---
+
 ## 2026-07-26
 
 ### Summary

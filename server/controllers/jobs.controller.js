@@ -4,8 +4,41 @@
 const fs = require('fs');
 const path = require('path');
 const JobModel = require('../models/job.model');
+const { pool } = require('../config/db');
+const sms = require('../services/smsService');
 
 const MAX_PHOTOS = 5;
+
+/**
+ * Completion SMS for a just-approved visit, recorded in sms_logs.
+ *
+ * Returns the logged status and NEVER throws: the approval row is already
+ * committed by the time this runs, so an SMS problem must not turn a successful
+ * approval into an error response (same rule as the activation SMS in
+ * agreements.controller). A customer with no phone on file is logged as
+ * 'skipped-no-phone' rather than silently dropped, so the office can see that
+ * they were not notified.
+ */
+async function notifyCompletion(job) {
+  try {
+    const message = sms.render('completion', {
+      name: job.customer_name,
+      agreementNo: job.agreement_no,
+    });
+    const status = job.phone ? (await sms.sendSms(job.phone, message)).status : 'skipped-no-phone';
+    await sms.logSms(pool, {
+      customerId: job.customer_id,
+      jobId: job.id,
+      templateType: 'completion',
+      message,
+      status,
+    });
+    return status;
+  } catch (err) {
+    console.error(`[sms:completion] job ${job.id}:`, err.message);
+    return 'failed';
+  }
+}
 
 const JobsController = {
   /** GET /api/jobs?month=YYYY-MM  or  ?date=YYYY-MM-DD */
@@ -50,10 +83,26 @@ const JobsController = {
     } catch (err) { next(err); }
   },
 
-  /** PATCH /api/jobs/:id/confirm — approve a completed job. */
+  /**
+   * PATCH /api/jobs/:id/confirm — approve a completed job.
+   *
+   * Approval is the moment the customer hears about the work, so the completion
+   * SMS fires HERE and not on the technician's Complete tap — a completion that
+   * gets reviewed and rejected never reaches them. Only a genuine
+   * FALSE→TRUE transition notifies, so re-approving is silent.
+   */
   async confirm(req, res, next) {
-    try { res.json({ job: await JobModel.confirm(req.params.id) }); }
-    catch (err) { next(err); }
+    try {
+      const existing = await JobModel.detail(req.params.id);
+      if (!existing) return res.status(404).json({ error: 'Job not found' });
+      if (existing.status !== 'completed') {
+        return res.status(422).json({ error: 'Only a completed job can be approved' });
+      }
+
+      const { job, justConfirmed } = await JobModel.confirm(req.params.id);
+      const smsStatus = justConfirmed ? await notifyCompletion(job) : 'already-approved';
+      res.json({ job, sms: smsStatus });
+    } catch (err) { next(err); }
   },
 
   /** GET /api/jobs/deleted */

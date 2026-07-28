@@ -5,6 +5,18 @@ import { jobsApi } from '../../api/jobs.api';
 import { PageHeader, EmptyState, Pill, Avatar, Svg, ICONS, rowContainer, rowItem } from '../../components/ui';
 import Lightbox from '../../components/Lightbox';
 
+/**
+ * Suffix appended to the "Approved" toast, per the `sms` status the confirm
+ * endpoint reports. 'sent' needs no note — the happy path is what the confirm
+ * strip already promised. Anything else means the customer was NOT texted, and
+ * the office needs to know that.
+ */
+const SMS_NOTE = {
+  logged: ' (SMS is in log-only mode — customer not texted yet.)',
+  failed: ' SMS could not be sent — the customer was not notified.',
+  'skipped-no-phone': ' No phone number on file — the customer was not notified.',
+};
+
 /** Authenticated photo grid for one job (JWT is in memory → fetch as blobs). */
 function PhotoReview({ jobId, onOpen }) {
   const [urls, setUrls] = useState([]);
@@ -57,11 +69,13 @@ export default function CompleteRequests() {
   async function approve(job) {
     setApproving(job.id); setConfirmId(null); setError('');
     try {
-      await jobsApi.confirm(job.id);
+      const { sms } = await jobsApi.confirm(job.id);
       setJobs((l) => l.filter((j) => j.id !== job.id));
       window.dispatchEvent(new Event('approvals-changed')); // refresh sidebar badge
-      setDone(`Approved ${job.agreement_no} — ${job.customer_name}.`);
-      setTimeout(() => setDone(''), 3500);
+      // The confirm strip promises the customer will be notified — say so when
+      // that didn't actually happen, instead of a bare "Approved".
+      setDone(`Approved ${job.agreement_no} — ${job.customer_name}.${SMS_NOTE[sms] || ''}`);
+      setTimeout(() => setDone(''), 5000);
     } catch (e) { setError(e.message); }
     finally { setApproving(null); }
   }

@@ -267,9 +267,20 @@ const JobModel = {
   },
 
   /** Admin/office confirms a completed job (finalizes it out of the queue). */
+  /**
+   * Approve a completed visit.
+   *
+   * The UPDATE is guarded on `admin_confirmed = FALSE` so a repeated approval
+   * (double-click, retried request) can't transition the same job twice.
+   * `justConfirmed` reports whether THIS call did the transition — that's what
+   * gates the completion SMS, so an approved customer is never texted again.
+   */
   async confirm(id) {
-    await pool.query('UPDATE jobs SET admin_confirmed = TRUE WHERE id = ?', [id]);
-    return this.detail(id);
+    const [res] = await pool.query(
+      'UPDATE jobs SET admin_confirmed = TRUE WHERE id = ? AND admin_confirmed = FALSE',
+      [id]
+    );
+    return { job: await this.detail(id), justConfirmed: res.affectedRows === 1 };
   },
 
   /** Next scheduled visits from today onward. */
