@@ -9,7 +9,9 @@
     "dev": "nodemon app.js",
     "seed:admin": "node db/seed-admin.js",
     "seed:demo": "node db/seed-demo.js",
-    "db:init": "node db/init-db.js"
+    "db:init": "node db/init-db.js",
+    "cron:reminders": "node jobs/reminderCron.js",
+    "cron:reminders:dry": "node jobs/reminderCron.js --dry-run"
   },
   "engines": {
     "node": ">=18"

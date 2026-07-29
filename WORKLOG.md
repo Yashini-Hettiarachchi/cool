@@ -4,6 +4,70 @@ A running history of what was done, session by session. Newest entries at the to
 
 ---
 
+## 2026-07-29
+
+### Summary
+Closed out **Phase 5** and built **Phase 6**. The reminder cron exists and works, message wording is now the office's to change, the Text.lk call no longer lies about success, and a job card prints on one A4 sheet. Phases 7–9 deliberately untouched.
+
+### Reminder cron — `server/jobs/reminderCron.js` ✅
+A standalone script, not `node-cron` inside the app: Passenger recycles the web process when it idles, so an in-process timer would quietly stop firing. cPanel runs it once a day; the exact entry (absolute node path, absolute script path, log redirect) is documented in RUN.md.
+
+All three constraints from phase-05 `issues.md` are built in:
+- **`.env` by absolute path** — cron's working directory is the user's home, not `server/`.
+- **Duplicate guard** — before sending, `SmsModel.reminderAlreadySent(jobId, runDate)` checks `sms_logs` for a non-`failed` reminder for that job on that run date. A second run the same day skips everything; a `failed` attempt is left open so it retries; a postponed job re-reminded on a later day still goes out.
+- **Clean exit** — `pool.end()` plus an explicit exit code (1 if any message failed), or the open pool would hold the process alive forever.
+
+One bad number or provider hiccup is caught per message and never aborts the batch (issue #4). `--dry-run` and `--date=YYYY-MM-DD` make the batch inspectable by hand.
+
+**Timezone (issue #7):** "tomorrow" is derived in `Asia/Colombo` via a new `services/dateService.js`, not from the host clock. A UTC cPanel box is 5h30m behind — the 08:00 run would be fine, but an evening re-run would have targeted the wrong day's customers.
+
+### Editable message wording
+New table `sms_templates` (the 10th), holding **overrides only** — a type with no row falls back to the default in `smsService.js`, so a database that predates this change still sends correct messages. Bodies use `{name}` / `{agreementNo}` / `{date}`.
+
+- `PUT /api/sms/templates/:type` **rejects unknown placeholders**. `render()` deliberately leaves an unrecognised token in place rather than blanking it, so a typo like `{custname}` would otherwise ship to customers verbatim.
+- Overrides are cached in-process for 60s; a save busts the cache immediately.
+- `render()` became **async** as a result. Both callers updated — and the activation SMS in `agreements.controller` now renders *after* `commit()`, so the template read can't take a second pool connection while a transaction is still holding one.
+
+### Text.lk hardening
+`sendSms` was accepting any 2xx as success. Text.lk answers **HTTP 200 with `{status:'error'}`** for things like an unapproved sender ID, so a rejected message was being recorded as sent. It now inspects the body, and additionally:
+- normalises local numbers to international form (`0771234567` → `94771234567`),
+- times out (`SMS_TIMEOUT_MS`, default 15s) so a hung provider can't stall a request or the cron batch,
+- carries the provider's own error text through to the caller.
+
+### SMS Centre — `/sms` (office)
+Three tabs plus a test box:
+- **Templates** — edit each message with a live preview, insertable placeholder chips, and a character / SMS-segment count that warns past two segments. Admin-only to save; system users see it read-only.
+- **History** — every `sms_logs` row with customer, agreement, status badge and the message text; filters by type, status, and free text; status counts across the top.
+- **Reminders** — exactly who tomorrow's cron would text and who it would skip (no phone / already handled), for any date. Answers "did the reminders go out?" without SSH.
+- **Send a test message** (admin-only) — one message to a chosen number with sample data. Deliberately **not** written to `sms_logs`: that table is the customer notification record, and a staff test isn't one. This is how the Text.lk credentials get proven before a customer depends on them.
+
+### Phase 6 — printable job card ✅
+`GET /api/jobs/:id/card` + `pages/JobCard.jsx` at `/jobs/:id/card`.
+
+- **A data endpoint, not the server-rendered HTML the plan sketched.** The JWT lives in memory only, so an HTML page would have to carry the token in the URL to be openable and printable. Same fields, one fewer way to leak a token.
+- `JobModel.cardData()` is one read: job + agreement commercials + customer + AC unit + technician + photo count + **visit N of M** (derived from the agreement's non-deleted jobs).
+- **Print via the browser** (issue #1) — no puppeteer, which cPanel shared hosting won't carry. Both Print and Download PDF open the same dialog; the PDF button's tooltip and a hint line say to pick "Save as PDF". `document.title` is swapped to `JobCard-AS-000NN-visit-N` before printing so the suggested filename is right, and restored on `afterprint` (not a timer, which would race a user who leaves the preview open).
+- **Print CSS** (issue #3) — A4/14mm; drops the rail, sticky topbar, all `.no-print` controls and pagination; un-offsets `.main`; flattens the sheet's card chrome; `break-inside: avoid` on sections, fields and the signature block; freezes animations so a mid-flight fade can't print at partial opacity.
+- Reachable from **office Job Detail** and **technician Job Detail** — the one route shared by all three roles, with the API still enforcing that a technician may only open a job assigned to them.
+
+### Verified (live, local MySQL + server on :3000)
+- `npm run db:init` → 10 tables; new `sms_templates` created on the existing DB.
+- `GET /api/sms/templates` → all three with defaults, previews, `is_custom:false`, `enabled:false`.
+- `PUT` with `{custname}` → **422** with the allowed list; a valid save → `is_custom:true` and a correct preview; `DELETE` → back to the default.
+- `POST /api/sms/test` with `0771234567` → recipient normalised to `94771234567`, `status:'logged'`, `detail:'SMS_ENABLED is off (log-only mode)'`.
+- `GET /api/jobs/22/card` → full card incl. `visit_no`/`visit_total`, both serials, agreement price/paid.
+- **Cron, three ways:** default run (nothing tomorrow → clean exit); `--dry-run --date=2026-10-22` → 2 recipients listed, nothing sent; real run → 2 rows logged; **immediate re-run → both skipped as "already handled today"**; `--date=oops` → validation error, exit 1.
+- `npm run build` green (472 modules, CSS 57.07 kB). All changed server files pass `node --check`.
+- **Dev DB left as found** — the two `sms_logs` rows the real cron run created were removed afterwards.
+
+### Not done / next
+- **Live Text.lk delivery is still unproven** — every layer on our side is now verified, but the HTTP call has never reached their API. Needs `SMS_ENABLED=true` + key + sender ID, then the test-send button.
+- **No cPanel cron entry exists yet** — the script is proven locally; scheduling it is a Phase 9 deploy step.
+- Client's exact job card template still not supplied; layout is isolated in `JobCard.jsx` + the `.jc-*` CSS block for a quick re-skin.
+- Phases 7 (archive & renewal), 8 (reporting) and 9 (deployment) untouched, as scoped.
+
+---
+
 ## 2026-07-28
 
 ### Summary

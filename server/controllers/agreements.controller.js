@@ -97,14 +97,17 @@ const AgreementsController = {
       // 5. jobs
       const jobsCreated = await generateJobs(conn, agreementId, startDate, totalVisits, periodDays);
 
-      // 6. activation SMS (record inside txn; actually send after commit)
+      // 6. activation SMS — read the recipient on the txn connection, but render
+      // and send only after commit. Rendering now hits the DB for the template
+      // override, and a second pool connection must never be taken while this
+      // transaction still holds one.
       const [custRows] = await conn.query('SELECT name, phone FROM customers WHERE id = ?', [customerId]);
       const cust = custRows[0];
-      const message = sms.render('activation', { name: cust.name, agreementNo });
 
       await conn.commit();
 
       // send after commit — failure only affects the log status, not the agreement
+      const message = await sms.render('activation', { name: cust.name, agreementNo });
       const result = await sms.sendSms(cust.phone, message);
       await sms.logSms(pool, {
         customerId,

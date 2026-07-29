@@ -148,9 +148,14 @@ export default function JobDetail() {
 
   return (
     <div className="tech-wrap tech-detail">
-      <button className="btn ghost tech-back" onClick={() => nav(-1)}>
-        <Svg d="M15 18l-6-6 6-6" size={16} /> Back
-      </button>
+      <div className="row-between">
+        <button className="btn ghost tech-back" onClick={() => nav(-1)}>
+          <Svg d="M15 18l-6-6 6-6" size={16} /> Back
+        </button>
+        <button className="btn ghost tech-back" onClick={() => nav(`/jobs/${id}/card`)}>
+          <Svg d={ICONS.file} size={16} /> Job card
+        </button>
+      </div>
 
       <AnimatePresence>
         {(notice || error) && (

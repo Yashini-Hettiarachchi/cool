@@ -22,6 +22,7 @@ const ICONS = {
   jobs: ['M20 7h-3V4a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v3H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z'],
   search: ['M21 21l-4.35-4.35', 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z'],
   approve: ['M9 11l3 3L22 4', 'M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
+  sms: ['M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z', 'M8 9h8', 'M8 13h5'],
 };
 
 const NAV = {
@@ -35,6 +36,7 @@ const NAV = {
       { to: '/calendar', icon: 'calendar', name: 'Calendar' },
       { to: '/assignments', icon: 'jobs', name: 'Assignments' },
       { to: '/complete-requests', icon: 'approve', name: 'Approvals' },
+      { to: '/sms', icon: 'sms', name: 'SMS Centre' },
       { to: '/cancellations', icon: 'cancel', name: 'Cancellations' },
       { to: '/deleted-jobs', icon: 'trash', name: 'Deleted Jobs' },
     ] },

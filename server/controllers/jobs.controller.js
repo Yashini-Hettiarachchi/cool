@@ -21,7 +21,7 @@ const MAX_PHOTOS = 5;
  */
 async function notifyCompletion(job) {
   try {
-    const message = sms.render('completion', {
+    const message = await sms.render('completion', {
       name: job.customer_name,
       agreementNo: job.agreement_no,
     });
@@ -123,6 +123,23 @@ const JobsController = {
       const job = await JobModel.detail(req.params.id);
       if (!job) return res.status(404).json({ error: 'Job not found' });
       res.json({ job });
+    } catch (err) { next(err); }
+  },
+
+  /**
+   * GET /api/jobs/:id/card — everything the printable job card shows.
+   *
+   * A data endpoint rather than the server-rendered HTML the phase plan sketched:
+   * the app is a token-authenticated SPA, so an HTML page would have to carry the
+   * JWT in the URL to be printable. The React card renders the same fields and
+   * prints through the browser (phase-06 issue #1 — no puppeteer on shared
+   * hosting).
+   */
+  async card(req, res, next) {
+    try {
+      const card = await JobModel.cardData(req.params.id);
+      if (!card) return res.status(404).json({ error: 'Job not found' });
+      res.json({ card, photos: await JobModel.listPhotos(req.params.id) });
     } catch (err) { next(err); }
   },
 

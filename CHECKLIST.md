@@ -6,7 +6,7 @@ Legend: `[ ]` to do · `[~]` partially done · `[x]` done
 
 ---
 
-## Where we are — 2026-07-28
+## Where we are — 2026-07-29
 
 **The core business loop is complete and live-verified:** register a customer → auto-generate their year of visits → assign a technician → technician works the job on their phone with photos → office reviews and approves → customer is notified.
 
@@ -16,22 +16,28 @@ Legend: `[ ]` to do · `[~]` partially done · `[x]` done
 | 2 — Customers & agreements (AS- numbering, auto-scheduling) | ✅ verified |
 | 3 — Calendar, assignment, postpone / cancel / soft-delete | ✅ verified |
 | 4 — Technician mobile module | ✅ verified |
-| 5 — SMS & completion approvals | 🔶 core done; reminder cron + live Text.lk left |
-| 6 — Job card print / PDF | ⬜ not started |
+| 5 — SMS & completion approvals | ✅ built; live Text.lk delivery still unproven |
+| 6 — Job card print / PDF | ✅ built (client's exact template still pending) |
 | 7 — Archive & renewal | ⬜ not started (only the DB column exists) |
 | 8 — Reporting | ⬜ not started |
 | 9 — Deployment | ⬜ not started |
 | 10 — Domain go-live | ⬜ not started |
 
-**~60% of the build**, weighted by effort rather than phase count (1–4 were the bulk; 6 and 8 are small additive screens). **Phase 7 is the only core business logic left** — everything else remaining is a convenience screen or deployment.
+**~75% of the build**, weighted by effort rather than phase count (1–4 were the bulk). **Phase 7 is the only core business logic left** — 8 is a single additive screen, 9/10 are deployment.
 
 ### Built but never proven ⚠️
 These read as done but carry real risk, because no one has ever exercised them:
 1. **The `system_user` role** — plumbed through backend and frontend since Phase 1; no account of that role has ever been created or logged in (see the section below).
-2. **Live SMS** — the Text.lk HTTP call has never executed. Log-only mode proves our side, not theirs.
-3. **Nothing has ever run off this machine** — no cPanel deploy, no Passenger, no remote MySQL. Phase 9 is where surprises usually live.
+2. **Live SMS delivery** — the Text.lk HTTP call has still never executed against the real API. Everything on our side of it now is verified (rendering, normalisation, logging, error handling, the cron), but their side isn't. **SMS Centre → Send a test message** is the one-click way to close this the moment credentials exist.
+3. **The reminder cron has never run from cron** — the script is verified locally (dry run, real run, and a repeat run correctly skipping what it had already handled), but no cPanel cron entry exists yet. That happens at Phase 9.
+4. **Nothing has ever run off this machine** — no cPanel deploy, no Passenger, no remote MySQL. Phase 9 is where surprises usually live.
 
-> **Shortest path to a client-visible URL** is arguably **Phase 9 before 6/7/8** — deploy what already works, then keep building against a live environment, rather than hitting every deployment surprise at once later.
+> **Shortest path to a client-visible URL** is now **Phase 9 before 7/8** — deploy what already works, then keep building against a live environment, rather than hitting every deployment surprise at once later.
+
+### ⚠️ Migration note for any existing database
+Phase 5 added a 10th table, `sms_templates`. Re-run `npm run db:init` in `server/`
+(safe and idempotent — every statement is `IF NOT EXISTS`) or the SMS Centre's
+Templates tab will fall back to the built-in defaults and silently refuse to save.
 
 ---
 
@@ -61,6 +67,12 @@ These read as done but carry real risk, because no one has ever exercised them:
 - [x] Fixed the leaking native "Choose Files" input (global `[hidden]` reset); made the photo **Add** tile interactive
 - [x] **Committed a checkpoint** — repo `git init`-ed and all of the above landed on `main` (HEAD `b600fc7`); working tree clean as of 2026-07-28
 
+### Phases 5 & 6 completion (2026-07-29)
+- [x] **Reminder cron** (`server/jobs/reminderCron.js`) — Colombo-timezone "tomorrow", duplicate guard, per-message failure isolation, clean exit; `--dry-run` / `--date=` for manual checks
+- [x] **SMS Centre** (`/sms`) — editable templates with live preview & placeholder validation, full send history with filters, tomorrow's reminder batch, and an admin-only test send
+- [x] **Text.lk path hardened** — number normalisation, timeout, and response-body inspection (a 200-with-error payload was previously logged as "sent")
+- [x] **Printable job card** (`/jobs/:id/card`) — one A4 sheet with print CSS, reachable from both office and technician job detail
+
 ---
 
 ## Roles — System User (office staff) ⚠️
@@ -75,7 +87,7 @@ The `system_user` role is **plumbed in but never verified end-to-end** — no ac
 
 ---
 
-## Phase 5 — SMS & Job Complete Requests  ⬅️ next
+## Phase 5 — SMS & Job Complete Requests  ✅
 **Goal:** technician completions land in a review queue; admin/system-user confirmation fires the Completion SMS and logs it; reminder cron runs on schedule.
 - [x] `GET /api/jobs/complete-requests` — list jobs where `status='completed'` AND `admin_confirmed=FALSE` (with photo_count, comments, service type)
 - [x] `PATCH /api/jobs/:id/confirm` — admin/system_user sets `admin_confirmed=TRUE`
@@ -84,18 +96,24 @@ The `system_user` role is **plumbed in but never verified end-to-end** — no ac
   - Approving is now guarded on a real `FALSE→TRUE` transition, so a double-click can't text the customer twice; re-approving returns `sms:'already-approved'`.
   - Approval also now rejects a job that isn't `completed` (**422**) or doesn't exist (**404**) — previously it would flag any job.
   - SMS can never fail an approval: send + log are wrapped, and a customer with no phone is recorded as `skipped-no-phone` instead of being silently dropped. Approvals screen surfaces all of this in the success toast.
-- [ ] Reminder cron (day-before visits) on schedule
-  - `reminder` template also written and unused. Design is already settled (see phase-05 `plan.md`/`issues.md`): a **standalone `server/jobs/reminderCron.js`** invoked by a cPanel cron entry (`0 8 * * *`, absolute node + script paths) — **not** an in-process `node-cron`. File doesn't exist yet.
-  - Three constraints from phase-05 `issues.md` to build in from the start: load `.env` explicitly (cron doesn't inherit app env); **guard against duplicate sends** (check `sms_logs` for an existing reminder for that job+date); and `pool.end()` / `process.exit(0)` so the script can't hang on the open DB pool. One failed message must not abort the batch.
-- [ ] Flip `SMS_ENABLED=true` path verified against Text.lk (currently log-only)
-  - `sendSms` posts to `app.text.lk/api/v3/sms/send` but has **never run live** — needs `TEXTLK_API_KEY` + `TEXTLK_SENDER_ID`.
+- [x] **Reminder cron (day-before visits)** — `server/jobs/reminderCron.js`, done 2026-07-29
+  - Standalone script run by cPanel cron (`0 8 * * *`, absolute node + script paths), **not** in-process `node-cron` — Passenger recycles the web process on idle, so a timer would stop firing. Exact entry is in [RUN.md](RUN.md#reminder-sms-the-daily-cron).
+  - All three constraints from phase-05 `issues.md` are in: `.env` loaded by absolute path; duplicate guard against `sms_logs` (a non-failed reminder for that job on that run date blocks a repeat, a failed one is retried); `pool.end()` + explicit exit code. One failed message doesn't abort the batch.
+  - "Tomorrow" is computed in **Asia/Colombo** (`services/dateService.js`), not from the host clock — issue #7.
+  - `--dry-run` and `--date=YYYY-MM-DD` for checking a batch by hand; the same batch is visible in the app at **SMS Centre → Reminders**.
+- [x] **Editable message wording** — new `sms_templates` table (overrides only; no row = shipped default) + **SMS Centre → Templates**, with live preview, placeholder validation, and character/segment count. Admin-only to edit.
+- [x] **SMS history** — `GET /api/sms/logs`, surfaced as **SMS Centre → History** with type/status/text filters and counts.
+- [x] **Text.lk call hardened** — local numbers normalised to `94…`, 15s timeout, and the *response body* inspected: Text.lk returns HTTP 200 with `{status:'error'}` for an unapproved sender ID, which the old `res.ok` check would have logged as sent.
+- [ ] **Live delivery still unproven** — needs `SMS_ENABLED=true` + `TEXTLK_API_KEY` + `TEXTLK_SENDER_ID`, then **SMS Centre → Send a test message** (admin-only; fires one message with sample data and is deliberately *not* written to customer history).
 
-## Phase 6 — Job Card Print / PDF
+## Phase 6 — Job Card Print / PDF ✅
 **Goal:** a job card can be opened, printed, and downloaded as a PDF cleanly.
-- [ ] Job card view (print-friendly layout) — *nothing exists yet: no JobCard page, no `@media print` block in `styles.css`*
-- [ ] Print stylesheet + Download-as-PDF
+- [x] Job card view — `GET /api/jobs/:id/card` + `pages/JobCard.jsx` at `/jobs/:id/card`; reachable from office Job Detail and technician Job Detail. Shows customer, address, route, AS-, visit N of M, AC brand/model/both serials, agreement commercials, comments, and signature lines.
+  - A data endpoint rather than the server-rendered HTML the plan sketched: the JWT lives in memory only, so an HTML page would have to carry the token in the URL to be printable.
+- [x] Print stylesheet (`@media print`: A4, drops rail/topbar/buttons, `break-inside: avoid`) + Download-as-PDF via the browser's Save-as-PDF destination — no puppeteer, which shared hosting won't carry. `document.title` is swapped so the file is named `JobCard-AS-000NN-visit-N`.
+- [ ] Re-skin to the client's exact template once they supply it (layout is isolated in `JobCard.jsx` + the `.jc-*` CSS block)
 
-## Phase 7 — Archive & Renewal
+## Phase 7 — Archive & Renewal  ⬅️ next
 **Goal:** cancelling archives an agreement (not deleted); renewing creates a fresh AS- linked to history, pre-filled from the old record.
 - [ ] Agreement archive on cancel (distinct from job cancel/soft-delete) — *no archive/cancel endpoint for agreements exists (only jobs can be cancelled today)*
 - [ ] Renew flow — new AS- linked via `parent_agreement_id`, pre-filled from prior record, loyalty year continuity

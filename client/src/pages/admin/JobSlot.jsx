@@ -17,6 +17,7 @@ const ICONS = {
   photos: 'M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
   clock: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6v6l4 2',
   arrow: 'M5 12h14M12 5l7 7-7 7',
+  jobcard: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8',
 };
 
 const Svg = ({ d, size = 18 }) => (
@@ -69,9 +70,14 @@ export default function JobSlot() {
 
   return (
     <motion.div variants={pageStagger} initial="hidden" animate="visible">
-      <motion.button {...tap} className="back-link" variants={listItem} onClick={() => navigate('/calendar')}>
-        <span className="bl-ico"><Svg d={ICONS.arrow} size={16} /></span> Back to calendar
-      </motion.button>
+      <motion.div className="row-between" variants={listItem}>
+        <motion.button {...tap} className="back-link" onClick={() => navigate('/calendar')}>
+          <span className="bl-ico"><Svg d={ICONS.arrow} size={16} /></span> Back to calendar
+        </motion.button>
+        <motion.button {...tap} className="secondary" onClick={() => navigate(`/jobs/${id}/card`)}>
+          <Svg d={ICONS.jobcard} size={16} /> Job card
+        </motion.button>
+      </motion.div>
 
       {/* ---- Summary ---- */}
       <motion.div className="card job-head" variants={listItem}>

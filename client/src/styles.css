@@ -1080,3 +1080,139 @@ textarea::placeholder { color: var(--faint); }
 @media (prefers-reduced-motion: reduce) {
   * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* ============================================================
+   SMS Centre (Phase 5)
+   ============================================================ */
+.sms-template .sms-body {
+  width: 100%; margin-top: 14px; resize: vertical;
+  font-family: var(--font-body); font-size: 14.5px; line-height: 1.55;
+}
+.sms-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; }
+.sms-tokens { font-size: 12.5px; color: var(--muted); display: inline-flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.sms-token {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+  padding: 3px 8px; border-radius: 6px; box-shadow: none;
+  background: var(--brand-tint); color: var(--brand-ink); border: 1px solid transparent;
+}
+.sms-token:hover:not(:disabled) { background: var(--brand); color: #fff; transform: none; filter: none; }
+.sms-token:disabled { background: #eef0f2; color: var(--faint); }
+.sms-count { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sms-count.warn { color: var(--st-postponed); font-weight: 600; }
+
+.sms-preview { margin-top: 12px; padding: 12px 14px; border-radius: var(--radius-sm);
+  background: var(--bg); border: 1px solid var(--border); }
+.sms-preview-label { font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+.sms-preview p { margin: 4px 0 0; font-size: 14px; line-height: 1.55; }
+
+.sms-result { display: flex; flex-direction: column; gap: 3px; margin-top: 14px;
+  padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg); font-size: 13.5px; }
+.sms-result strong { font-size: 14px; }
+.sms-result-msg { color: var(--muted); font-style: italic; }
+.sms-result.sms-st-sent { background: #e6f5ee; border-color: #bfe6d3; color: var(--st-completed); }
+.sms-result.sms-st-failed { background: #fdeaee; border-color: #f5c6ce; color: var(--danger); }
+
+.sms-hist-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
+.sms-stats { display: flex; gap: 8px; flex-wrap: wrap; }
+.sms-stat { display: flex; flex-direction: column; align-items: flex-start; min-width: 74px;
+  padding: 8px 12px; border-radius: var(--radius-sm); background: var(--bg); border: 1px solid var(--border); }
+.sms-stat-v { font-family: var(--font-display); font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.sms-stat-l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.sms-stat.tone-green .sms-stat-v { color: var(--st-completed); }
+.sms-stat.tone-red .sms-stat-v { color: var(--danger); }
+.sms-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+.sms-filters input { min-width: 210px; }
+.sms-msg-cell { max-width: 380px; color: var(--muted); font-size: 13px; }
+
+/* Status badges reuse the .badge pill; sms statuses are strings, not the job enum. */
+.badge.sms-st-sent { background: var(--st-completed); }
+.badge.sms-st-logged { background: var(--st-inprogress); }
+.badge.sms-st-failed { background: var(--danger); }
+.badge.sms-st-skipped-no-phone { background: var(--st-postponed); }
+
+@media (max-width: 720px) {
+  .sms-filters input { min-width: 0; flex: 1; }
+  .sms-msg-cell { max-width: 200px; }
+}
+
+/* ============================================================
+   Job card (Phase 6) — screen presentation + print sheet
+   ============================================================ */
+.jobcard-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.jcb-actions { display: inline-flex; gap: 8px; }
+.jobcard-hint { margin: 0 0 14px; font-size: 13px; }
+
+.jobcard-sheet {
+  background: #fff; color: #14181D;
+  border: 1px solid var(--border-strong); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 34px 38px;
+  max-width: 820px; margin: 0 auto;
+}
+
+.jc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px;
+  padding-bottom: 16px; border-bottom: 2px solid var(--ink); }
+.jc-brand { display: flex; align-items: center; gap: 12px; }
+.jc-mark { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center;
+  background: var(--brand); color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 20px; }
+.jc-company { font-family: var(--font-display); font-size: 20px; font-weight: 700; line-height: 1.1; }
+.jc-company-sub { font-size: 12px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+.jc-meta { text-align: right; }
+.jc-title { font-family: var(--font-display); font-size: 15px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.jc-as { font-size: 22px; font-weight: 700; line-height: 1.2; }
+.jc-visit { font-size: 12.5px; color: var(--muted); }
+
+.jc-section { margin-top: 20px; }
+.jc-h { margin: 0 0 10px; font-family: var(--font-display); font-size: 12px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--brand-ink); }
+.jc-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 22px; }
+.jc-field { display: flex; flex-direction: column; gap: 1px; padding-bottom: 7px; border-bottom: 1px dotted var(--border-strong); min-width: 0; }
+.jc-field.wide { grid-column: 1 / -1; }
+.jc-label { font-size: 10.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.jc-value { font-size: 14.5px; font-weight: 500; overflow-wrap: anywhere; }
+
+.jc-notes .jc-notebox { min-height: 74px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+  padding: 12px 14px; font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
+
+.jc-foot { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; margin-top: 34px; }
+.jc-sign { display: flex; flex-direction: column; gap: 6px; }
+.jc-sign-line { display: block; height: 34px; border-bottom: 1px solid var(--ink); }
+.jc-sign-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+
+.jc-fineprint { margin: 26px 0 0; text-align: center; font-size: 11px; color: var(--faint); }
+
+@media (max-width: 620px) {
+  .jobcard-sheet { padding: 22px 18px; }
+  .jc-grid { grid-template-columns: 1fr; }
+  .jc-head { flex-direction: column; }
+  .jc-meta { text-align: left; }
+  .jc-foot { grid-template-columns: 1fr; gap: 18px; }
+}
+
+/* ---------- Print ----------
+   Only the job card sheet survives. Everything the app draws around it — dark
+   rail, sticky topbar, buttons, the page background — is either invisible ink
+   or wasted toner, and a fixed-position sidebar would otherwise repeat on every
+   printed page (phase-06 issue #3). */
+@media print {
+  @page { size: A4; margin: 14mm; }
+
+  body { background: #fff; font-size: 12pt; }
+  .sidebar, .scrim, .topbar, .no-print, .pagination { display: none !important; }
+  .app-shell { display: block; min-height: 0; }
+  .main { margin-left: 0; display: block; }
+  .content { padding: 0; max-width: none; }
+
+  .jobcard-sheet {
+    border: none; box-shadow: none; border-radius: 0;
+    padding: 0; max-width: none; margin: 0;
+  }
+  /* Keep a section and its heading together rather than orphaning a label at
+     the foot of page 1. */
+  .jc-section, .jc-foot, .jc-field { break-inside: avoid; page-break-inside: avoid; }
+  .jc-h { color: #000; }
+  .jc-mark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .jc-notebox { min-height: 90px; }
+
+  /* Any animation still mid-flight would print at whatever opacity it reached. */
+  * { animation: none !important; transition: none !important; opacity: 1 !important; transform: none !important; }
+}

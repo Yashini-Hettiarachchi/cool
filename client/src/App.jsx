@@ -15,6 +15,8 @@ import Calendar from './pages/admin/Calendar';
 import Assignments from './pages/admin/Assignments';
 import CompleteRequests from './pages/admin/CompleteRequests';
 import JobSlot from './pages/admin/JobSlot';
+import SmsCentre from './pages/admin/SmsCentre';
+import JobCard from './pages/JobCard';
 import DeletedJobs from './pages/admin/DeletedJobs';
 import JobCancellations from './pages/admin/JobCancellations';
 import TodayJobs from './pages/technician/TodayJobs';
@@ -37,6 +39,11 @@ function AnimatedRoutes({ home }) {
           <Route path="/assignments" element={<ProtectedRoute roles={office}><Assignments /></ProtectedRoute>} />
           <Route path="/complete-requests" element={<ProtectedRoute roles={office}><CompleteRequests /></ProtectedRoute>} />
           <Route path="/jobs/:id" element={<ProtectedRoute roles={office}><JobSlot /></ProtectedRoute>} />
+          {/* Job card is printed by office staff AND by technicians on site, so it
+              is the one page shared by all three roles. The API still enforces
+              that a technician may only open a job assigned to them. */}
+          <Route path="/jobs/:id/card" element={<ProtectedRoute roles={[...office, 'technician']}><JobCard /></ProtectedRoute>} />
+          <Route path="/sms" element={<ProtectedRoute roles={office}><SmsCentre /></ProtectedRoute>} />
           <Route path="/cancellations" element={<ProtectedRoute roles={office}><JobCancellations /></ProtectedRoute>} />
           <Route path="/deleted-jobs" element={<ProtectedRoute roles={office}><DeletedJobs /></ProtectedRoute>} />
           <Route path="/users" element={<ProtectedRoute roles={['admin']}><AddUsers /></ProtectedRoute>} />

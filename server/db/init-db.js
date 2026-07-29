@@ -27,7 +27,7 @@ async function main() {
   console.log('Running schema.sql ...');
   await conn.query(sql);
   await conn.end();
-  console.log('Database initialised (9 tables ready).');
+  console.log('Database initialised (10 tables ready).');
 }
 
 main().catch((err) => {

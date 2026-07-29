@@ -41,6 +41,7 @@ router.get('/', office, JobsController.list);
 
 // --- Single job: readable by office + assigned technician ---
 router.get('/:id', anyRole, ownsJob, JobsController.detail);
+router.get('/:id/card', anyRole, ownsJob, JobsController.card);
 router.get('/:id/photos', anyRole, ownsJob, JobsController.photos);
 router.get('/:id/photos/:photoId', anyRole, ownsJob, JobsController.photoFile);
 

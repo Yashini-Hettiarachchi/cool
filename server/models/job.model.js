@@ -283,6 +283,66 @@ const JobModel = {
     return { job: await this.detail(id), justConfirmed: res.affectedRows === 1 };
   },
 
+  /**
+   * Visits due on a given date that still deserve a day-before reminder —
+   * the reminder cron's work list.
+   *
+   * 'postponed' is included because a postponed job carries its NEW date in
+   * scheduled_date; the customer still needs telling. 'completed' and
+   * 'cancelled' are excluded — there is nothing left to remind them about.
+   */
+  async listForReminder(date) {
+    const [rows] = await pool.query(
+      `SELECT j.id, j.scheduled_date, j.status,
+              a.agreement_no,
+              c.id AS customer_id, c.name AS customer_name, c.phone
+         FROM jobs j
+         JOIN agreements a ON j.agreement_id = a.id
+         JOIN customers c ON a.customer_id = c.id
+        WHERE j.is_deleted = FALSE
+          AND j.scheduled_date = ?
+          AND j.status IN ('scheduled', 'postponed')
+        ORDER BY j.id`,
+      [date]
+    );
+    return rows;
+  },
+
+  /**
+   * Everything the printable job card needs in one read: the job, its agreement
+   * commercials, the customer, the AC unit, the technician, and where this visit
+   * sits in the agreement's series (visit 3 of 4).
+   */
+  async cardData(id) {
+    const [[row]] = await pool.query(
+      `SELECT j.id, j.scheduled_date, j.status, j.service_type_used, j.comments,
+              j.completed_at, j.admin_confirmed, j.postponed_from, j.postpone_days,
+              j.postpone_reason, j.cancel_reason, j.notes,
+              a.id AS agreement_id, a.agreement_no, a.normal_count, a.hp_count,
+              a.period_days, a.price, a.start_date, a.end_date, a.amount_paid,
+              a.status AS agreement_status,
+              c.id AS customer_id, c.name AS customer_name, c.phone, c.nic,
+              c.address, c.route,
+              ac.brand, ac.model, ac.serial_indoor, ac.serial_outdoor, ac.install_notes,
+              u.name AS technician_name, u.phone AS technician_phone,
+              (SELECT COUNT(*) FROM job_photos p WHERE p.job_id = j.id) AS photo_count,
+              (SELECT COUNT(*) FROM jobs sib
+                 WHERE sib.agreement_id = j.agreement_id AND sib.is_deleted = FALSE) AS visit_total,
+              (SELECT COUNT(*) FROM jobs sib
+                 WHERE sib.agreement_id = j.agreement_id AND sib.is_deleted = FALSE
+                   AND (sib.scheduled_date < j.scheduled_date
+                        OR (sib.scheduled_date = j.scheduled_date AND sib.id <= j.id))) AS visit_no
+         FROM jobs j
+         JOIN agreements a ON j.agreement_id = a.id
+         JOIN customers c ON a.customer_id = c.id
+         JOIN ac_units ac ON a.ac_unit_id = ac.id
+         LEFT JOIN users u ON j.technician_id = u.id
+        WHERE j.id = ? LIMIT 1`,
+      [id]
+    );
+    return row || null;
+  },
+
   /** Next scheduled visits from today onward. */
   async upcoming(limit = 6) {
     const [rows] = await pool.query(

@@ -10,6 +10,7 @@ export const jobsApi = {
   toAssign: () => api.get('/jobs/to-assign'),
   completeRequests: (status) => api.get(`/jobs/complete-requests${status ? `?status=${status}` : ''}`),
   confirm: (id) => api.patch(`/jobs/${id}/confirm`, {}),
+  card: (id) => api.get(`/jobs/${id}/card`),
   photos: (id) => api.get(`/jobs/${id}/photos`),
   async photoUrl(jobId, photoId) {
     const res = await fetch(`/api/jobs/${jobId}/photos/${photoId}`, {

@@ -1,7 +1,9 @@
 -- ============================================================
 -- Highcool AC Service Management System — MySQL schema
--- 9 tables. Source: design-plans/07_Database_Setup_Guide_MySQL.md
+-- 10 tables. Source: design-plans/07_Database_Setup_Guide_MySQL.md
 -- Run in phpMyAdmin (cPanel) or a local MySQL instance.
+-- Safe to re-run (every statement is IF NOT EXISTS) — that is also how an
+-- existing install picks up a newly added table such as sms_templates.
 -- ============================================================
 
 -- Create the database with utf8mb4 (required for Sinhala text in `route`).
@@ -116,6 +118,18 @@ CREATE TABLE IF NOT EXISTS job_photos (
   uploaded_by INT,
   FOREIGN KEY (job_id) REFERENCES jobs(id),
   FOREIGN KEY (uploaded_by) REFERENCES users(id)
+);
+
+-- SMS TEMPLATES (admin-editable wording; defaults live in services/smsService.js)
+-- Bodies use {placeholder} tokens: {name}, {agreementNo}, {date}.
+-- An empty table is fine — the service falls back to its built-in defaults.
+CREATE TABLE IF NOT EXISTS sms_templates (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  template_type ENUM('activation','reminder','completion') NOT NULL UNIQUE,
+  body TEXT NOT NULL,
+  updated_by INT NULL,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (updated_by) REFERENCES users(id)
 );
 
 -- SMS LOGS
