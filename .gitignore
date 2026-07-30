@@ -4,7 +4,15 @@ client/node_modules/
 server/node_modules/
 
 # Env / secrets
-
+# server/.env is deliberately tracked: this is a private repo and the deployment
+# is a single client install, so keeping the working config in-repo is simpler
+# than re-entering it per environment. It holds live credentials (DB, JWT,
+# Text.lk) — anyone with repo access has them, so rotate on access changes.
+.env
+.env.*
+!.env.example
+!server/.env
+client/.env
 
 # Build output
 client/dist/
