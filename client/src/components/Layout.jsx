@@ -8,6 +8,8 @@ const TITLES = [
   [/^\/customers/, 'Customers'],
   [/^\/agreements\/new/, 'New Agreement'],
   [/^\/calendar/, 'Calendar'],
+  [/^\/assignments/, 'Assignments'],
+  [/^\/complete-requests/, 'Completion Approvals'],
   [/^\/jobs\/\d+\/card/, 'Job Card'],
   [/^\/jobs\/\d+/, 'Job Detail'],
   [/^\/sms/, 'SMS Centre'],

@@ -57,6 +57,9 @@ export default function CompleteRequests() {
   const [lb, setLb] = useState(null); // { images, index }
   const [tab, setTab] = useState('pending'); // 'pending' | 'approved'
   const approvedView = tab === 'approved';
+  // Count for the tab the user is NOT on, so the pair reads as a queue at a
+  // glance ("1 pending / 6 approved") rather than one number in isolation.
+  const [otherCount, setOtherCount] = useState(null);
 
   useEffect(() => {
     setBusy(true); setError('');
@@ -65,6 +68,14 @@ export default function CompleteRequests() {
       .catch((e) => setError(e.message))
       .finally(() => setBusy(false));
   }, [tab, approvedView]);
+
+  useEffect(() => {
+    let alive = true;
+    jobsApi.completeRequests(approvedView ? undefined : 'approved')
+      .then(({ jobs }) => { if (alive) setOtherCount((jobs || []).length); })
+      .catch(() => { if (alive) setOtherCount(null); });
+    return () => { alive = false; };
+  }, [tab, approvedView, done]);
 
   async function approve(job) {
     setApproving(job.id); setConfirmId(null); setError('');
@@ -88,9 +99,17 @@ export default function CompleteRequests() {
             ? `${jobs.length} approved completion${jobs.length === 1 ? '' : 's'}.`
             : `${jobs.length} completion${jobs.length === 1 ? '' : 's'} awaiting your review.`} />
 
-      <div className="seg" style={{ marginBottom: 16 }}>
-        <button type="button" className={!approvedView ? 'active' : ''} onClick={() => setTab('pending')}>Pending</button>
-        <button type="button" className={approvedView ? 'active' : ''} onClick={() => setTab('approved')}>Approved</button>
+      <div className="seg approve-tabs" role="tablist" aria-label="Completion queue">
+        <button type="button" role="tab" aria-selected={!approvedView}
+          className={!approvedView ? 'active' : ''} onClick={() => setTab('pending')}>
+          Pending
+          <small>{(!approvedView ? jobs.length : otherCount) ?? '—'}</small>
+        </button>
+        <button type="button" role="tab" aria-selected={approvedView}
+          className={approvedView ? 'active' : ''} onClick={() => setTab('approved')}>
+          Approved
+          <small>{(approvedView ? jobs.length : otherCount) ?? '—'}</small>
+        </button>
       </div>
 
       <AnimatePresence>
@@ -118,7 +137,10 @@ export default function CompleteRequests() {
                 <Avatar name={job.customer_name} size={38} />
                 <div>
                   <div className="nc-main">{job.customer_name}</div>
-                  <div className="nc-sub"><span className="mono">{job.agreement_no}</span> · {job.route || 'No route'}</div>
+                  <div className="nc-sub">
+                    <span className="mono">{job.agreement_no}</span>
+                    {job.route && <> · {job.route}</>}
+                  </div>
                 </div>
               </div>
               <Pill tone={job.service_type_used === 'hp' ? 'blue' : 'brand'}>
@@ -137,21 +159,17 @@ export default function CompleteRequests() {
 
             <PhotoReview jobId={job.id} onOpen={(images, index) => setLb({ images, index })} />
 
-            <div className="approve-actions">
-              {approvedView && <Pill tone="green">Approved</Pill>}
-              <button className="btn ghost" onClick={() => navigate(`/jobs/${job.id}`)}>Open full detail</button>
-              {!approvedView && confirmId !== job.id && (
-                <button className="btn primary" onClick={() => setConfirmId(job.id)}>
-                  <Svg d="M20 6L9 17l-5-5" size={16} /> Approve completion
-                </button>
-              )}
-            </div>
-
-            {!approvedView && confirmId === job.id && (
+            {/* Asking and acting occupy the same slot. Showing the confirm strip
+                *below* a still-live "Approve completion" button left two primary
+                buttons on screen at once — the question and its own answer. */}
+            {!approvedView && confirmId === job.id ? (
               <motion.div className="approve-confirm" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}>
                 <span className="ac-note">
-                  <Svg d={ICONS.inbox} size={16} />
-                  Mark <b>{job.agreement_no}</b> complete? The customer will be notified — this can't be undone.
+                  <Svg d={ICONS.alert} size={16} />
+                  <span>
+                    Mark <b className="mono">{job.agreement_no}</b> complete?
+                    <em> {job.customer_name} will be texted, and this can’t be undone.</em>
+                  </span>
                 </span>
                 <div className="ac-btns">
                   <button className="btn ghost" disabled={approving === job.id} onClick={() => setConfirmId(null)}>Not yet</button>
@@ -160,6 +178,21 @@ export default function CompleteRequests() {
                   </button>
                 </div>
               </motion.div>
+            ) : (
+              <div className="approve-actions">
+                <button className="btn ghost sm" onClick={() => navigate(`/jobs/${job.id}`)}>
+                  Open full detail <Svg d={ICONS.arrow} size={14} />
+                </button>
+                <div className="aa-end">
+                  {approvedView
+                    ? <Pill tone="green">Approved</Pill>
+                    : (
+                      <button className="btn primary" onClick={() => setConfirmId(job.id)}>
+                        <Svg d="M20 6L9 17l-5-5" size={16} /> Approve completion
+                      </button>
+                    )}
+                </div>
+              </div>
             )}
           </motion.div>
         ))}

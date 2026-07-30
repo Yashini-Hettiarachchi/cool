@@ -153,7 +153,8 @@ a { color: var(--brand); text-decoration: none; }
 }
 
 /* ---------- Buttons ----------
-   Variants: primary (default) · .secondary (outline) · .link (ghost) · .danger */
+   Variants: primary (default) · .secondary (outline) · .ghost (quiet) · .link (tinted pill) · .danger
+   Sizes/shapes: .sm · .block */
 button, .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
   font-family: var(--font-body); font-size: 14px; font-weight: 600; line-height: 1;
@@ -174,6 +175,23 @@ button:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow:
 /* Secondary (outline) */
 button.secondary { background: var(--surface); color: var(--ink); border-color: var(--border-strong); }
 button.secondary:hover:not(:disabled) { background: #fff; border-color: var(--brand); color: var(--brand); box-shadow: var(--shadow-sm); }
+
+/* Ghost — quiet secondary action: no fill until hover.
+   This variant was being *used* in five places (Back, Job Card, Save comment,
+   "Not yet", "Open full detail") but had never been defined, so every one of
+   them fell through to the default and rendered as a full red primary button —
+   two primaries side by side, and unreadable once a muted text colour was set
+   on top of the red fill. Sits between .secondary (outlined, always visible)
+   and .link (brand-tinted pill). */
+button.ghost, .btn.ghost {
+  background: transparent; color: var(--muted);
+  border-color: transparent; box-shadow: none;
+}
+button.ghost:hover:not(:disabled), .btn.ghost:hover {
+  background: var(--bg); color: var(--ink); border-color: var(--border-strong);
+  transform: none; box-shadow: none; filter: none;
+}
+button.ghost:active:not(:disabled) { background: var(--border); transform: scale(.98); box-shadow: none; }
 
 /* Ghost / link — now a clear tinted pill so it reads as clickable */
 button.link {
@@ -1049,26 +1067,73 @@ textarea::placeholder { color: var(--faint); }
   font-weight: 600; background: rgba(0, 0, 0, .45); padding: 4px 12px; border-radius: 999px; }
 
 /* Completion approvals */
-.approve-list { display: flex; flex-direction: column; gap: 16px; }
-.approve-card { display: flex; flex-direction: column; gap: 12px; }
+/* Approvals queue.
+   Capped to a reading column: on a wide monitor the card was stretching past
+   1400px, which left the photo strip marooned against a field of empty space
+   and pushed the primary action a screen-width away from the name it applies to. */
+.approve-list { display: flex; flex-direction: column; gap: 16px; max-width: 920px; }
+.approve-card { display: flex; flex-direction: column; gap: 14px; margin-bottom: 0; }
 .approve-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.approve-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--muted); }
-.approve-meta span { display: inline-flex; align-items: center; gap: 6px; }
-.approve-comment { margin: 0; font-size: 13.5px; color: var(--ink); background: var(--bg); border-left: 3px solid var(--border-strong);
-  padding: 8px 12px; border-radius: 0 8px 8px 0; font-style: italic; }
-.approve-card .photo-thumb { display: block; }
-.approve-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
-.approve-actions .btn.primary { display: inline-flex; align-items: center; gap: 7px; }
+.approve-head .nc-main { text-wrap: balance; }
 
-/* Two-step approve confirm — a calm inline strip, not a modal */
+/* Tab pair doubles as the queue count, so the numbers must not reflow the
+   labels as they change. */
+.approve-tabs { margin-bottom: 16px; }
+.approve-tabs small { font-variant-numeric: tabular-nums; }
+
+/* Facts row: a quiet, evenly-spaced strip. Separators instead of wide gaps so
+   it reads as one line of metadata rather than four stray labels. */
+.approve-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px;
+  font-size: 13px; color: var(--muted);
+  padding: 10px 12px; background: var(--bg); border-radius: var(--radius-sm); }
+.approve-meta span { display: inline-flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+.approve-meta svg { color: var(--faint); flex-shrink: 0; }
+
+.approve-comment { margin: 0; font-size: 13.5px; color: var(--ink); background: var(--bg);
+  border-left: 3px solid var(--border-strong);
+  padding: 10px 14px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-style: italic; text-wrap: pretty; }
+
+/* Denser tiles than the technician's capture grid: this is a scan-and-judge
+   surface, not a gallery, and 90px tiles crowded out the decision below them. */
+.approve-card .photo-grid { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); }
+.approve-card .photo-thumb { display: block; cursor: zoom-in;
+  transition-property: transform, box-shadow, border-color;
+  transition-duration: 150ms; transition-timing-function: ease-out; }
+.approve-card .photo-thumb:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.approve-card .photo-thumb:active { transform: scale(.97); }
+
+/* Secondary action left, decision right — the eye lands on the commitment last. */
+.approve-actions { display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; flex-wrap: wrap;
+  padding-top: 12px; border-top: 1px solid var(--border); }
+.approve-actions .aa-end { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; }
+.approve-actions .btn.primary { display: inline-flex; align-items: center; gap: 7px; }
+.approve-actions .btn.ghost.sm { gap: 6px; }
+.approve-actions .btn.ghost.sm svg { transition: transform 150ms ease-out; }
+.approve-actions .btn.ghost.sm:hover svg { transform: translateX(2px); }
+
+/* Two-step approve confirm — a calm inline strip, not a modal.
+   Radius 10 against the card's 12: nested, so it must not echo its parent's
+   corner exactly. Amber rather than the old pink-on-pink, which put a red
+   warning surface directly behind a red primary button and flattened both. */
 .approve-confirm { display: flex; align-items: center; justify-content: space-between; gap: 14px;
-  flex-wrap: wrap; margin-top: 2px; padding: 12px 14px; border-radius: 12px;
-  background: #fff6f7; border: 1px solid var(--brand-100, #f7d3d9); }
-.approve-confirm .ac-note { display: inline-flex; align-items: center; gap: 8px;
-  font-size: 13.5px; color: var(--ink); line-height: 1.4; }
-.approve-confirm .ac-note svg { color: var(--brand); flex-shrink: 0; }
+  flex-wrap: wrap; padding: 12px 14px; border-radius: 10px;
+  background: #fffaf0; border: 1px solid #f2ddb4; }
+.approve-confirm .ac-note { display: inline-flex; align-items: flex-start; gap: 9px;
+  font-size: 13.5px; color: var(--ink); line-height: 1.45; text-wrap: pretty; }
+.approve-confirm .ac-note svg { color: #b7791f; flex-shrink: 0; margin-top: 1px; }
+.approve-confirm .ac-note em { font-style: normal; color: var(--muted); }
 .approve-confirm .ac-btns { display: inline-flex; gap: 8px; margin-left: auto; }
 .approve-confirm .btn.primary { display: inline-flex; align-items: center; gap: 6px; }
+
+@media (max-width: 620px) {
+  /* Stacked, the decision buttons should span the strip rather than huddle right. */
+  .approve-confirm .ac-btns { width: 100%; margin-left: 0; }
+  .approve-confirm .ac-btns .btn { flex: 1; justify-content: center; }
+  .approve-actions .aa-end { width: 100%; margin-left: 0; }
+  .approve-actions .aa-end .btn { flex: 1; justify-content: center; }
+}
 
 /* Back link (top of Job Detail) */
 .back-link { display: inline-flex; align-items: center; gap: 7px; background: transparent; border: none;
