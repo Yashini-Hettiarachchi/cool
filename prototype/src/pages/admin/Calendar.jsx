@@ -17,7 +17,9 @@ const STATUS_CLASS = {
   completed: 'st-completed',
   cancelled: 'st-cancelled',
 };
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+const WEEKDAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+
 const LEGEND = [
   ['scheduled', 'Scheduled'],
   ['in_progress', 'In progress'],
@@ -51,8 +53,11 @@ export default function Calendar() {
     return m;
   }, [jobs]);
 
-  const firstWeekday = new Date(year, monthIdx, 1).getDay();
+  // Monday = 0, Sunday = 6
+  const rawFirstDay = new Date(year, monthIdx, 1).getDay();
+  const firstWeekday = (rawFirstDay + 6) % 7;
   const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
+
   const now = new Date();
   const isThisMonth = now.getFullYear() === year && now.getMonth() === monthIdx;
   const todayDate = now.getDate();
@@ -79,22 +84,24 @@ export default function Calendar() {
     <div className="cal-layout">
       {/* ---- Calendar Card ---- */}
       <div className="card cal-card">
-        <div className="row-between cal-toolbar">
+        <div className="cal-toolbar">
           <div className="cal-title">
             <h1>{cursor.toLocaleString('en', { month: 'long' })} <span className="cal-year">{year}</span></h1>
             <span className="cal-total">{jobs.length} visit{jobs.length === 1 ? '' : 's'}</span>
           </div>
           <div className="cal-nav">
-            <button className="secondary cal-btn" onClick={() => move(-1)} aria-label="Previous month"><Chevron dir="left" /></button>
-            <button className="secondary" onClick={goToday} disabled={isThisMonth}>Today</button>
-            <button className="secondary cal-btn" onClick={() => move(1)} aria-label="Next month"><Chevron dir="right" /></button>
+            <button className="btn secondary cal-btn" onClick={() => move(-1)} aria-label="Previous month"><Chevron dir="left" /></button>
+            <button className="btn secondary" onClick={goToday} disabled={isThisMonth}>Today</button>
+            <button className="btn secondary cal-btn" onClick={() => move(1)} aria-label="Next month"><Chevron dir="right" /></button>
           </div>
         </div>
 
+        {/* Month Banner Weekday Bar */}
         <div className="cal-weekhead">
           {WEEKDAYS.map((w) => <div key={w} className="cal-head">{w}</div>)}
         </div>
 
+        {/* Month Box Grid */}
         <AnimatePresence mode="wait">
           <motion.div key={`${year}-${monthIdx}`} className="cal-grid"
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
@@ -113,7 +120,7 @@ export default function Calendar() {
                       <div className="cal-jobs">
                         {dayJobs.slice(0, 3).map((j) => (
                           <motion.button key={j.id} className={`cal-job ${STATUS_CLASS[j.status] || ''}`}
-                            whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                             onClick={() => navigate(`/jobs/${j.id}`)} title={`${j.agreement_no} — ${j.customer_name} (${j.status})`}>
                             <span className="job-dot" /><span className="job-label">{j.customer_name}</span>
                           </motion.button>
@@ -134,7 +141,7 @@ export default function Calendar() {
               <path d="M8 2v4M16 2v4M3 10h18" /><rect x="3" y="4" width="18" height="18" rx="2" />
             </svg>
             <p>No visits scheduled in {cursor.toLocaleString('en', { month: 'long' })} {year}.</p>
-            <button className="secondary" onClick={() => move(1)}>Check next month ›</button>
+            <button className="btn secondary" onClick={() => move(1)}>Check next month ›</button>
           </motion.div>
         )}
       </div>
