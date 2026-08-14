@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useLocation } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { useAuth } from './auth/AuthContext';
 import { pageVariants } from './lib/motion';
