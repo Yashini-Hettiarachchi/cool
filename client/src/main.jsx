@@ -5,10 +5,11 @@ import App from './App.jsx';
 import { AuthProvider } from './auth/AuthContext.jsx';
 import './styles.css';
 
+const basename = import.meta.env.BASE_URL === '/' ? '' : '/admin';
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    {/* basename keeps every route under /admin */}
-    <BrowserRouter basename="/admin">
+    <BrowserRouter basename={basename}>
       <AuthProvider>
         <App />
       </AuthProvider>
