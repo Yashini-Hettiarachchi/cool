@@ -12,11 +12,13 @@ export function getAuthToken() {
   return authToken;
 }
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 async function request(method, path, body) {
   const headers = { 'Content-Type': 'application/json' };
   if (authToken) headers.Authorization = `Bearer ${authToken}`;
 
-  const res = await fetch(`/api${path}`, {
+  const res = await fetch(`${API_BASE}/api${path}`, {
     method,
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
@@ -45,7 +47,7 @@ async function postForm(path, formData) {
   const headers = {};
   if (authToken) headers.Authorization = `Bearer ${authToken}`;
 
-  const res = await fetch(`/api${path}`, { method: 'POST', headers, body: formData });
+  const res = await fetch(`${API_BASE}/api${path}`, { method: 'POST', headers, body: formData });
 
   let data = null;
   const text = await res.text();
