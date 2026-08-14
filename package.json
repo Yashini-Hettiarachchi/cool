@@ -1,0 +1,20 @@
+{
+  "name": "ac-service-hub",
+  "version": "1.0.0",
+  "description": "Highcool Service Hub — AC Service Management System",
+  "private": true,
+  "scripts": {
+    "setup": "npm install --prefix server && npm install --prefix client",
+    "build": "cd client && npm install && npm run build",
+    "start": "npm start --prefix server",
+    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"cyan,magenta\" \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "db:init": "npm run db:init --prefix server",
+    "seed:admin": "npm run seed:admin --prefix server",
+    "seed:demo": "npm run seed:demo --prefix server",
+    "cron:reminders": "npm run cron:reminders --prefix server",
+    "cron:reminders:dry": "npm run cron:reminders:dry --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
