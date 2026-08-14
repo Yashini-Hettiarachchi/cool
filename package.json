@@ -12,7 +12,9 @@
     "seed:admin": "npm run seed:admin --prefix server",
     "seed:demo": "npm run seed:demo --prefix server",
     "cron:reminders": "npm run cron:reminders --prefix server",
-    "cron:reminders:dry": "npm run cron:reminders:dry --prefix server"
+    "cron:reminders:dry": "npm run cron:reminders:dry --prefix server",
+    "prototype:dev": "npm run dev --prefix prototype",
+    "prototype:build": "cd prototype && npm install && npm run build"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
