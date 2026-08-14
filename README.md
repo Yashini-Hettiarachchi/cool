@@ -21,25 +21,32 @@ AC-Project/
 - Node.js ≥ 18 (developed on v24)
 - MySQL 8.x (local, Docker, or cPanel)
 
-## Local setup
+## Local setup (Without Docker)
 
-### 1. Backend
+### 1. Setup & Environment
 ```bash
-cd server
-npm install
-cp .env.example .env          # then edit DB creds + JWT_SECRET
-npm run db:init               # creates DB + 9 tables from db/schema.sql
-npm run seed:admin            # seeds the first admin (creds from .env)
-npm run dev                   # http://localhost:3000
+npm run setup                 # installs dependencies for server and client
+cp server/.env.example server/.env # edit DB credentials (root / admin123 by default)
 ```
 
-### 2. Frontend
+### 2. Database Initialisation
 ```bash
-cd client
-npm install
-npm run dev                   # http://localhost:5173/admin (proxies /api to :3000)
+npm run db:init               # creates ac_service_system database & tables
+npm run seed:admin            # seeds the first admin user
 ```
-For a production-style run, `npm run build` in `client/`, then the Express server serves `client/dist` at `http://localhost:3000/admin`.
+
+### 3. Run the App
+- **Development mode (hot reload):**
+  ```bash
+  npm run dev                 # runs server (:3000) and client (:5173) concurrently
+  ```
+  Open **http://localhost:5173/admin**
+
+- **Production-style mode:**
+  ```bash
+  npm run build               # builds client static files to client/dist
+  npm start                   # starts Express server on http://localhost:3000/admin
+  ```
 
 ## Default login (after seeding)
 Login is by **username + password** (per client requirement; phone is contact info only).
